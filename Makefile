@@ -6,12 +6,10 @@ CFLAGS = -g -O3 -fdiagnostics-color=always -std=c++17 $(INCLUDEPATH)
 CFLIBFLAGS = $(CFLAGS)
 
 ifeq ($(OS),Windows_NT)
-# Windows
-	LDFLAGS := -lglfw3 -lopengl32 -ljsoncpp
+	LDFLAGS := 
 	EXE_EXT = .exe
 else
-# Linux
-	LDFLAGS := -lglfw -lGL -ljsoncpp
+	LDFLAGS := 
 	EXE_EXT = 
 endif
 
