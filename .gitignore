@@ -2,3 +2,4 @@ b865-db*
 *.o
 build
 .vscode
+.stamp

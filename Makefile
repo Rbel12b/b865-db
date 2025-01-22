@@ -23,14 +23,14 @@ APP = b865-db$(EXE_EXT)
 all: build run 
 
 run: $(APP)
-	./$(APP)
+	./$(APP) build/test.cdb
 
 build: $(APP)
 
 $(APP): $(LIBOBJ) $(OBJ)
 	$(CXX) -o $(APP) $(OBJ) $(LIBOBJ) $(LDFLAGS)
 
-build/%.o: src/%.cpp $(wildcard src/*.h)
+build/%.o: src/%.cpp .stamp
 	$(CXX) $(CFLAGS) -o $@ -c $<
 
 lib/%.o: lib/%.cpp $(wildcard lib/**/.h)
@@ -38,3 +38,10 @@ lib/%.o: lib/%.cpp $(wildcard lib/**/.h)
 
 lib/%.o: lib/%.cc $(wildcard lib/**/.h)
 	$(CXX) $(CFLIBFLAGS) -o $@ -c $<
+
+.stamp:
+ifeq ($(OS),Windows_NT)
+	echo > .stamp
+else
+	touch .stamp
+endif
