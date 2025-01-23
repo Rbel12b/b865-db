@@ -25,7 +25,7 @@ public:
     class Type
     {
     public:
-        enum class DLCType
+        enum class DCLType
         {
             ARRAY,
             FUNCTION,
@@ -46,7 +46,7 @@ public:
             BITFIELD,
             UNKNOWN,
         };
-        DLCType type = DLCType::UNKNOWN;
+        DCLType type = DCLType::UNKNOWN;
         int n = 0;
         std::string name;
     };

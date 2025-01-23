@@ -28,6 +28,6 @@ private:
     // parser helpers
     TypeChainRecord parseTypeChain(std::istringstream& line);
 
-    TypeChainRecord::Type::DLCType getDLCType(char c1, char c2);
+    TypeChainRecord::Type::DCLType getDCLType(char c1, char c2);
 };
 #endif

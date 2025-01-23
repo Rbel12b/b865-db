@@ -196,13 +196,13 @@ TypeChainRecord cdbParser::parseTypeChain(std::istringstream &line)
     char c1 = type[0];
     char c2 = type[1];
     i += 2;
-    typeChain.type.type = getDLCType(c1, c2);
-    if (typeChain.type.type == TypeChainRecord::Type::DLCType::STRUCT)
+    typeChain.type.type = getDCLType(c1, c2);
+    if (typeChain.type.type == TypeChainRecord::Type::DCLType::STRUCT)
     {
         typeChain.type.name = type.substr(i, type.find_first_of(":,") - i);
     }
-    else if (typeChain.type.type == TypeChainRecord::Type::DLCType::ARRAY ||
-        typeChain.type.type == TypeChainRecord::Type::DLCType::BITFIELD)
+    else if (typeChain.type.type == TypeChainRecord::Type::DCLType::ARRAY ||
+        typeChain.type.type == TypeChainRecord::Type::DCLType::BITFIELD)
     {
         typeChain.type.n = strtoull(type.substr(i, type.find_first_of(":,") - i).c_str(), nullptr, 10);
     }
@@ -219,13 +219,13 @@ TypeChainRecord cdbParser::parseTypeChain(std::istringstream &line)
         std::getline(line, type, ',');
         c1 = type[0];
         c2 = type[1];
-        typeChain.type2.type = getDLCType(c1, c2);
-        if (typeChain.type2.type == TypeChainRecord::Type::DLCType::STRUCT)
+        typeChain.type2.type = getDCLType(c1, c2);
+        if (typeChain.type2.type == TypeChainRecord::Type::DCLType::STRUCT)
         {
             typeChain.type2.name = type.substr(i, type.find_first_of(":,") - i);
         }
-        else if (typeChain.type2.type == TypeChainRecord::Type::DLCType::ARRAY ||
-            typeChain.type2.type == TypeChainRecord::Type::DLCType::BITFIELD)
+        else if (typeChain.type2.type == TypeChainRecord::Type::DCLType::ARRAY ||
+            typeChain.type2.type == TypeChainRecord::Type::DCLType::BITFIELD)
         {
             typeChain.type2.n = strtoull(type.substr(i, type.find_first_of(":,") - i).c_str(), nullptr, 10);
         }
@@ -238,81 +238,81 @@ TypeChainRecord cdbParser::parseTypeChain(std::istringstream &line)
     return typeChain;
 }
 
-TypeChainRecord::Type::DLCType cdbParser::getDLCType(char c1, char c2)
+TypeChainRecord::Type::DCLType cdbParser::getDCLType(char c1, char c2)
 {
     if (c1 == 'D')
     {
         if (c2 == 'A')
         {
-            return TypeChainRecord::Type::DLCType::ARRAY;
+            return TypeChainRecord::Type::DCLType::ARRAY;
         }
         else if (c2 == 'F')
         {
-            return TypeChainRecord::Type::DLCType::FUNCTION;
+            return TypeChainRecord::Type::DCLType::FUNCTION;
         }
         else if (c2 == 'G')
         {
-            return TypeChainRecord::Type::DLCType::GEN_POINTER;
+            return TypeChainRecord::Type::DCLType::GEN_POINTER;
         }
         else if (c2 == 'C')
         {
-            return TypeChainRecord::Type::DLCType::CODE_POINTER;
+            return TypeChainRecord::Type::DCLType::CODE_POINTER;
         }
         else if (c2 == 'X')
         {
-            return TypeChainRecord::Type::DLCType::EXT_RAM_POINTER;
+            return TypeChainRecord::Type::DCLType::EXT_RAM_POINTER;
         }
         else if (c2 == 'D')
         {
-            return TypeChainRecord::Type::DLCType::INT_RAM_POINTER;
+            return TypeChainRecord::Type::DCLType::INT_RAM_POINTER;
         }
         else if (c2 == 'P')
         {
-            return TypeChainRecord::Type::DLCType::PAGED_POINTER;
+            return TypeChainRecord::Type::DCLType::PAGED_POINTER;
         }
         else if (c2 == 'I')
         {
-            return TypeChainRecord::Type::DLCType::UPPER128_POINTER;
+            return TypeChainRecord::Type::DCLType::UPPER128_POINTER;
         }
     }
     else
     {
         if (c2 == 'L')
         {
-            return TypeChainRecord::Type::DLCType::LONG;
+            return TypeChainRecord::Type::DCLType::LONG;
         }
         else if (c2 == 'I')
         {
-            return TypeChainRecord::Type::DLCType::INT;
+            return TypeChainRecord::Type::DCLType::INT;
         }
         else if (c2 == 'C')
         {
-            return TypeChainRecord::Type::DLCType::CHAR;
+            return TypeChainRecord::Type::DCLType::CHAR;
         }
         else if (c2 == 'S')
         {
-            return TypeChainRecord::Type::DLCType::SHORT;
+            return TypeChainRecord::Type::DCLType::SHORT;
         }
         else if (c2 == 'V')
         {
-            return TypeChainRecord::Type::DLCType::VOID;
+            return TypeChainRecord::Type::DCLType::VOID;
         }
         else if (c2 == 'F')
         {
-            return TypeChainRecord::Type::DLCType::FLOAT;
+            return TypeChainRecord::Type::DCLType::FLOAT;
         }
         else if (c2 == 'T')
         {
-            return TypeChainRecord::Type::DLCType::STRUCT;
+            return TypeChainRecord::Type::DCLType::STRUCT;
         }
         else if (c2 == 'X')
         {
-            return TypeChainRecord::Type::DLCType::SBIT;
+            return TypeChainRecord::Type::DCLType::SBIT;
         }
         else if (c2 == 'B')
         {
-            return TypeChainRecord::Type::DLCType::BITFIELD;
+            return TypeChainRecord::Type::DCLType::BITFIELD;
         }
     }
-    return TypeChainRecord::Type::DLCType::UNKNOWN;
+    return TypeChainRecord::Type::DCLType::UNKNOWN;
 }
