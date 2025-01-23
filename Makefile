@@ -2,7 +2,7 @@ CXX = g++
 
 INCLUDEPATH =
 
-CFLAGS = -g -O3 -fdiagnostics-color=always -std=c++17 $(INCLUDEPATH)
+CFLAGS = -g -fdiagnostics-color=always -std=c++17 $(INCLUDEPATH)
 CFLIBFLAGS = $(CFLAGS)
 
 ifeq ($(OS),Windows_NT)

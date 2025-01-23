@@ -1,34 +1,25 @@
 #include <iostream>
-#include "Emulator/Emulator.h"
+#include "Parser/cdbParser.h"
 
-Emulator emulator;
+cdbParser parser;
 
 int main(int argc, char *argv[])
 {
 
     if(argc >= 2)
     {
-        if(emulator.load(argv[1]))
-        {
-            return 1;
-        }
-    }
-    else
-    {
-        fprintf(stderr, "Error: No ROM file specified.\n");
-        return 1;
-    }
-    
-    if(emulator.init())
-    {
-        return 1;
-    }
+        parser.init(argv[1]);
 
-    emulator.start();
-    while (1)
-    {
-        
+        DebuggerData* data = parser.parse();
+        if(data != NULL)
+        {
+            printf("Modules:\n");
+            for(auto& str : data->modules)
+            {
+                printf("%s\n", str.c_str());
+            }
+        }
+        delete data;
     }
-    emulator.stop();
     return 0;
 }
