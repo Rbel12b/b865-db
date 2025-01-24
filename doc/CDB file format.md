@@ -7,8 +7,8 @@ This document is based on this [CDB File Format Documentation](https://sourcefor
 The record examples and grammar shown in this document are displayed on multiple lines for readability. However, the records within the CDB files are always encoded on a single line.
 
 - **Record Elements**: Enclosed with `<` and `>`.
-- **Alternation**: Indicated using `|`.
 - **Optional Items**: Enclosed in `{` and `}`.
+- **Comments**: Starting with `//`.
 
 ## 2. Record Formats
 
@@ -51,6 +51,14 @@ foo()
 }
 ```
 
+#### 2.1.2 Scopes
+
+| Field           | Description                                          |
+| --------------- | ---------------------------------------------------- |
+| `Scope`         | `G`: Global scope                                    |
+|                 | `F<Filename>`: File scope                            |
+|                 | `L<Filename>.<Function>`: Function scope             |
+
 ### 2.2 Module Record
 
 | Type       | Description                                              |
@@ -77,9 +85,7 @@ M:_bp
 
 | Field           | Description                                          |
 | --------------- | ---------------------------------------------------- |
-| `Scope`         | `G`: Global scope                                    |
-|                 | `F<Filename>`: File scope                            |
-|                 | `L<Function>`: Local scope                           |
+| `Scope`         | [Scope](#212-scopes)                                 |
 | `Name`          | Symbol name                                          |
 | `Level`         | Scope level                                          |
 | `Block`         | Scope block                                          |
@@ -115,14 +121,14 @@ S:Ltimer0LoadExtended$count$1$1({2}SI:S),B,1,-4
 **Format**:
 
 ```text
-<{Size}>{DCLType},{DCLType}:<Sign>
+<{Size}>DCLType,{DCLType}:<Sign>
 ```
 
 #### 2.3.1.1 DCL Types
 
 | Code | Description          |
 | ---- | -------------------- |
-| `DA` | Array of n elements  |
+| `DA<n>d` | Array of `n` elements  |
 | `DF` | Function             |
 | `DG` | Generic pointer      |
 | `DC` | Code pointer         |
@@ -131,14 +137,18 @@ S:Ltimer0LoadExtended$count$1$1({2}SI:S),B,1,-4
 | `SI` | Integer              |
 | `SC` | Character            |
 | `SV` | Void                 |
+| `SF` | Float                |
+| `ST<name>` | Structure of name `<name>`|
 | `SX` | SBit                 |
-| `SB` | Bit field of n bits  |
+| `SB<offset>$<n>` | Bit field of `n` bits, `offset` bits from the start of the byte |
 
 **Examples**:
 
 ```text
-{3}DG,STTTinyBuffer:S
-{2}SI:S
+{3}DG,STTTinyBuffer:S - Generic Pointer to a TinyBuffer structure, signed (TinyBuffer*)
+{2}SI:S - Signed Integer (int)
+{2}DF,DG,DG,SL:S - Function with return type: Generic Pointer to a Generic Pointer to a Long, signed (long**)
+{500}DA25d,DA10d,DG,SI:S - array of 25 elements by 10 elements of Generic Pointer to int, signed (int* x[25][10])
 ```
 
 #### 2.3.2 Address Space Codes
@@ -166,9 +176,7 @@ These codes are included in the `<AddressSpace>` field of a symbol record, provi
 
 | Field             | Description                                       |
 | ----------------- | ------------------------------------------------- |
-| `Scope`           | `G`: Global scope                                 |
-|                   | `F<Filename>`: File scope                         |
-|                   | `L<Function>`: Local scope                        |
+| `Scope`           | [Scope](#212-scopes)                              |
 | `Name`            | Symbol name                                       |
 | `Level`           | Scope level                                       |
 | `Block`           | Scope block                                       |
@@ -212,7 +220,7 @@ T:<Filename>$<Name>[<TypeMember>]
 | Field          | Description                                     |
 | -------------- | ----------------------------------------------- |
 | `Offset`       | The offset of this type member in decimal       |
-| `SymbolRecord` | A complete [symbol record](#23-symbol-record) describing this Member |
+| `SymbolRecord` | Complete [symbol records](#23-symbol-record) each decribing one member |
 
 **Format**:
 
@@ -222,8 +230,20 @@ T:<Filename>$<Name>[<TypeMember>]
 
 **Example**:
 
+C code:
+
+```c
+typedef struct TinyBuffer
+{
+  TinyBuffer* pNext;
+  unsigned char length;
+};
+```
+
+Type record:
+
 ```text
-T:Fcmdas$TTinyBuffer[
+T:G$TTinyBuffer[
   ({0}S:S$pNext$0$0({3}DG,STTTinyBuffer:S),Z,0,0)
   ({3}S:S$length$0$0({1}SC:U),Z,0,0)
 ]
@@ -233,9 +253,7 @@ T:Fcmdas$TTinyBuffer[
 
 | Field             | Description                                       |
 | ----------------- | ------------------------------------------------- |
-| `Scope`           | `G`: Global scope                                 |
-|                   | `F<Filename>`: File scope                         |
-|                   | `L<Function>`: Local scope                        |
+| `Scope`           | [Scope](#212-scopes)                              |
 | `Filename`        | Filename                                          |
 | `Name`            | Symbol name                                       |
 | `Level`           | Scope level                                       |
