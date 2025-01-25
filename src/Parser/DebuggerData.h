@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <map>
 
 enum class REG
 {
@@ -93,13 +94,18 @@ enum class AddressSpace
     UNKNOWN,
 };
 
-class SymbolRecord
+class ScopeNameLevelBlock
 {
 public:
     Scope scope;
     std::string name;
     uint64_t level = 0;
     uint64_t block = 0;
+};
+
+class SymbolRecord : public ScopeNameLevelBlock
+{
+public:
     TypeChainRecord typeChain;
     AddressSpace addressSpace = AddressSpace::UNKNOWN;
     bool onStack = false;
@@ -107,17 +113,36 @@ public:
     std::vector<REG> registers;
 };
 
+class FunctionRecord : public SymbolRecord
+{
+public:
+    bool interrupt = false;
+    int interruptNum = 0;
+    int regBankNum = 0;
+};
 
+class ScopeData
+{
+public:
+    std::vector<SymbolRecord> symbols;
+    std::vector<FunctionRecord> functions;
+};
 class DebuggerData
 {
 public:
     std::vector<std::string> modules;
-    std::vector<SymbolRecord> symbols;
+    ScopeData globalScope;
+    std::map<std::string, ScopeData> fileScope;
+    std::map<std::string, ScopeData> funcScope;
 
 public:
     void clear();
     void addModule(const std::string& module);
     void addSymbol(const SymbolRecord& symbol);
+    void addFunc(const FunctionRecord& func);
+
+private: 
+    void checkScopeExists(Scope scope);
 };
 
 #endif

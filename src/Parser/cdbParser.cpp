@@ -75,6 +75,21 @@ void cdbParser::parseModule(std::vector<Token>& tokens, DebuggerData &data)
 
 void cdbParser::parseFunction(std::vector<Token>& tokens, DebuggerData &data)
 {
+    FunctionRecord func;
+    if (tokens.size() < 14)
+    {
+        return;
+    }
+    size_t i = 0;
+    parseScopeNameLevelBlock(tokens, i, func);
+    func.typeChain = parseTypeChain(tokens, i);
+    func.addressSpace = (AddressSpace)tokens[i++].value[0];
+    func.onStack = (tokens[i++].value[0] != '0');
+    func.stack_offs = std::stoi(tokens[i++].value);
+    func.interrupt = (tokens[i++].value[0] != '0');
+    func.interruptNum = std::stoi(tokens[i++].value);
+    func.regBankNum = std::stoi(tokens[i++].value);
+    data.addFunc(func);
 }
 
 void cdbParser::parseSymbol(std::vector<Token>& tokens, DebuggerData &data)
@@ -85,14 +100,7 @@ void cdbParser::parseSymbol(std::vector<Token>& tokens, DebuggerData &data)
         return;
     }
     size_t i = 0;
-    symbol.scope.type = (Scope::Type)tokens[i++].value[0];
-    if (symbol.scope.type != Scope::Type::GLOBAL)
-    {
-        symbol.scope.name = tokens[i - 1].value.substr(1);
-    }
-    symbol.name = tokens[i++].value;
-    symbol.level = std::stoi(tokens[i++].value);
-    symbol.block = std::stoi(tokens[i++].value);
+    parseScopeNameLevelBlock(tokens, i, symbol);
     symbol.typeChain = parseTypeChain(tokens, i);
     symbol.addressSpace = (AddressSpace)tokens[i++].value[0];
     symbol.onStack = (tokens[i++].value[0] != '0');
@@ -176,6 +184,18 @@ TypeChainRecord cdbParser::parseTypeChain(std::vector<Token>& tokens, size_t& i)
         i++;
     }
     return typeChain;
+}
+
+void cdbParser::parseScopeNameLevelBlock(std::vector<Token> &tokens, size_t &i, ScopeNameLevelBlock &data)
+{
+    data.scope.type = (Scope::Type)tokens[i++].value[0];
+    if (data.scope.type != Scope::Type::GLOBAL)
+    {
+        data.scope.name = tokens[i - 1].value.substr(1);
+    }
+    data.name = tokens[i++].value;
+    data.level = std::stoi(tokens[i++].value);
+    data.block = std::stoi(tokens[i++].value);
 }
 
 REG cdbParser::getReg(Token token)

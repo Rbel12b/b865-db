@@ -42,6 +42,7 @@ private:
 
     // parser helpers
     TypeChainRecord parseTypeChain(std::vector<Token>& tokens, size_t& i);
+    void parseScopeNameLevelBlock(std::vector<Token>& tokens, size_t& i, ScopeNameLevelBlock& data);
 
     TypeChainRecord::Type::DCLType getDCLType(Token token);
     REG getReg(Token token);
