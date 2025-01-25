@@ -46,12 +46,19 @@ public:
             BITFIELD,
             UNKNOWN,
         };
-        DCLType type = DCLType::UNKNOWN;
-        int n = 0;
+        DCLType DCLtype = DCLType::UNKNOWN;
+        union
+        {
+            int n;
+            struct
+            {
+                char offset;
+                char size;
+            } bitField;
+        } num;
         std::string name;
     };
-    Type type;
-    Type type2;
+    std::vector<Type> types;
     bool sign = false;
 };
 

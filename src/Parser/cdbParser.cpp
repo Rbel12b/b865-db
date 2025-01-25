@@ -25,33 +25,34 @@ DebuggerData *cdbParser::parse()
     std::string linestr;
     while (std::getline(iss, linestr))
     {
-        std::istringstream line(linestr);
-        char type = line.get();
-        line.get();
-        if(line.bad())
+        if(linestr.size() < 3)
         {
             continue;
         }
+        char type = linestr[0];
+
+        std::vector<Token> tokens = tokenize(linestr.substr(2));
+
         switch (type)
         {
         case 'M':
-            parseModule(line, data);
+            parseModule(tokens, data);
             break;
 
         case 'F':
-            parseFunction(line, data);
+            parseFunction(tokens, data);
             break;
 
         case 'S':
-            parseSymbol(line, data);
+            parseSymbol(tokens, data);
             break;
 
         case 'T':
-            parseStructure(line, data);
+            parseStructure(tokens, data);
             break;
 
         case 'L':
-            parseLinker(line, data);
+            parseLinker(tokens, data);
             break;
         
         default:
@@ -63,183 +64,162 @@ DebuggerData *cdbParser::parse()
     return ptrdata;
 }
 
-void cdbParser::parseModule(std::istringstream &line, DebuggerData &data)
+void cdbParser::parseModule(std::vector<Token>& tokens, DebuggerData &data)
 {
-    std::string moduleName;
-    std::getline(line, moduleName);
-    data.addModule(moduleName);
+    if (tokens.size() < 1)
+    {
+        return;
+    }
+    data.addModule(tokens[0].value);
 }
 
-void cdbParser::parseFunction(std::istringstream &line, DebuggerData &data)
+void cdbParser::parseFunction(std::vector<Token>& tokens, DebuggerData &data)
 {
 }
 
-void cdbParser::parseSymbol(std::istringstream &line, DebuggerData &data)
+void cdbParser::parseSymbol(std::vector<Token>& tokens, DebuggerData &data)
 {
     SymbolRecord symbol;
-    symbol.scope.type = (Scope::Type)line.get();
-    std::string str;
+    if (tokens.size() < 12)
+    {
+        return;
+    }
+    size_t i = 0;
+    symbol.scope.type = (Scope::Type)tokens[i++].value[0];
     if (symbol.scope.type != Scope::Type::GLOBAL)
     {
-        std::getline(line, str, '$');
-        symbol.scope.name = str;
+        symbol.scope.name = tokens[i - 1].value.substr(1);
     }
-    if (line.peek() == '$')
+    symbol.name = tokens[i++].value;
+    symbol.level = std::stoi(tokens[i++].value);
+    symbol.block = std::stoi(tokens[i++].value);
+    symbol.typeChain = parseTypeChain(tokens, i);
+    symbol.addressSpace = (AddressSpace)tokens[i++].value[0];
+    symbol.onStack = (tokens[i++].value[0] != '0');
+    symbol.stack_offs = std::stoi(tokens[i++].value);
+    if (tokens[i].type != Token::Type::LineEnd)
     {
-        line.ignore();
-    }
-    std::getline(line, str, '$');
-    symbol.name = str;
-    if (line.peek() == '$')
-    {
-        line.ignore();
-    }
-    std::getline(line, str, '$');
-    symbol.level = std::stoi(str.substr(0,str.find_first_of('_')));
-    if (line.peek() == '$')
-    {
-        line.ignore();
-    }
-    std::getline(line, str, '(');
-    symbol.block = std::stoi(str);
-
-    symbol.typeChain = parseTypeChain(line);
-    if (line.peek() == ',')
-    {
-        line.ignore();
-    }
-    symbol.addressSpace = (AddressSpace)line.get();
-    line.ignore();
-    symbol.onStack = (line.get() != '0');
-    line.ignore();
-    std::getline(line, str, ',');
-    symbol.stack_offs = std::stoi(str);
-    if (line.peek() == ',')
-    {
-        line.ignore();
-        if (line.get() == '[')
+        while (tokens[i].type != Token::Type::LineEnd)
         {
-            do
+            if (tokens[i].type == Token::Type::LeftBracket || tokens[i].type == Token::Type::RightBracket)
             {
-                if (line.peek() == ',')
-                {
-                    line.ignore();
-                }
-                std::string reg;
-                std::getline(line, reg, ',');
-                if (reg == "a")
-                {
-                    symbol.registers.push_back(REG::A_IDX);
-                }
-                else if (reg == "x")
-                {
-                    symbol.registers.push_back(REG::X_IDX);
-                }
-                else if (reg == "y")
-                {
-                    symbol.registers.push_back(REG::Y_IDX);
-                }
-                else if (reg == "sp")
-                {
-                    symbol.registers.push_back(REG::SP_IDX);
-                }
-                else if (reg == "r0")
-                {
-                    symbol.registers.push_back(REG::R0_IDX);
-                }
-                else if (reg == "r1")
-                {
-                    symbol.registers.push_back(REG::R1_IDX);
-                }
-                else if (reg == "r2")
-                {
-                    symbol.registers.push_back(REG::R2_IDX);
-                }
-                else if (reg == "r3")
-                {
-                    symbol.registers.push_back(REG::R3_IDX);
-                }
-            } while (line.peek() == ',');
+                i++;
+                continue;
+            }
+            symbol.registers.push_back(getReg(tokens[i++]));
         }
     }
     data.addSymbol(symbol);
 }
 
-void cdbParser::parseStructure(std::istringstream &line, DebuggerData &data)
+void cdbParser::parseStructure(std::vector<Token>& tokens, DebuggerData &data)
 {
 }
 
-void cdbParser::parseLinker(std::istringstream &line, DebuggerData &data)
+void cdbParser::parseLinker(std::vector<Token>& tokens, DebuggerData &data)
 {
 }
 
-TypeChainRecord cdbParser::parseTypeChain(std::istringstream &line)
+TypeChainRecord cdbParser::parseTypeChain(std::vector<Token>& tokens, size_t& i)
 {
     TypeChainRecord typeChain;
-    if (line.peek() == '(')
+    if (tokens.size() < 2)
     {
-        line.ignore();
+        return typeChain;
     }
-    if (line.get() == '{')
+    if (tokens[i].type == Token::Type::LeftBracket)
     {
-        line >> typeChain.size;
-        line.ignore();
+        i++;
     }
-    bool last;
-    int i = 0;
-    std::string type;
-    std::getline(line, type, ',');
-    if (type[type.size() - 1] == ')')
+    if (tokens[i].type == Token::Type::LeftBracket)
     {
-        last = true;
+        i++;
     }
-    char c1 = type[0];
-    char c2 = type[1];
-    i += 2;
-    typeChain.type.type = getDCLType(c1, c2);
-    if (typeChain.type.type == TypeChainRecord::Type::DCLType::STRUCT)
+    typeChain.size = std::stoi(tokens[i++].value);
+    if (tokens[i].type == Token::Type::RightBracket)
     {
-        typeChain.type.name = type.substr(i, type.find_first_of(":,") - i);
+        i++;
     }
-    else if (typeChain.type.type == TypeChainRecord::Type::DCLType::ARRAY ||
-        typeChain.type.type == TypeChainRecord::Type::DCLType::BITFIELD)
+    size_t DCLTypeNum;
+    while (1)
     {
-        typeChain.type.n = strtoull(type.substr(i, type.find_first_of(":,") - i).c_str(), nullptr, 10);
-    }
-    if (last)
-    {
-        typeChain.sign = (type.substr(type.find_first_of(":,") + 1, 1) == "S");
-    }
-    else
-    {
-        if (line.peek() == ',')
+        Token& token = tokens[i];
+        if (token.value.size() < 2)
         {
-            line.ignore();
+            typeChain.sign = (token.value == "S");
+            i++;
+            break;
         }
-        std::getline(line, type, ',');
-        c1 = type[0];
-        c2 = type[1];
-        typeChain.type2.type = getDCLType(c1, c2);
-        if (typeChain.type2.type == TypeChainRecord::Type::DCLType::STRUCT)
+        else
         {
-            typeChain.type2.name = type.substr(i, type.find_first_of(":,") - i);
+            TypeChainRecord::Type type;
+            type.DCLtype = getDCLType(token);
+            if (type.DCLtype == TypeChainRecord::Type::DCLType::STRUCT)
+            {
+                type.name = token.value.substr(2);
+            }
+            else if (type.DCLtype == TypeChainRecord::Type::DCLType::ARRAY)
+            {
+                type.num.n = strtoull(token.value.substr(2).c_str(), nullptr, 10);
+            }
+            else if (type.DCLtype == TypeChainRecord::Type::DCLType::BITFIELD)
+            {
+                type.num.bitField.offset = strtoull(token.value.substr(2).c_str(), nullptr, 10);
+                type.num.bitField.size = strtoull(token.value.substr(token.value.find_first_of('$') + 1).c_str(), nullptr, 10);
+            }
+            typeChain.types.push_back(type);
         }
-        else if (typeChain.type2.type == TypeChainRecord::Type::DCLType::ARRAY ||
-            typeChain.type2.type == TypeChainRecord::Type::DCLType::BITFIELD)
-        {
-            typeChain.type2.n = strtoull(type.substr(i, type.find_first_of(":,") - i).c_str(), nullptr, 10);
-        }
-        typeChain.sign = (type.substr(type.find_first_of(":,") + 1, 1) == "S");
+        i++;
     }
-    if (line.peek() == ')')
+    while (tokens[i].type == Token::Type::RightBracket)
     {
-        line.ignore();
+        i++;
     }
     return typeChain;
 }
 
-TypeChainRecord::Type::DCLType cdbParser::getDCLType(char c1, char c2)
+REG cdbParser::getReg(Token token)
+{ 
+    std::string reg = token.value;
+    if (reg == "a")
+    {
+        return REG::A_IDX;
+    }
+    else if (reg == "x")
+    {
+        return REG::X_IDX;
+    }
+    else if (reg == "y")
+    {
+        return REG::Y_IDX;
+    }
+    else if (reg == "sp")
+    {
+        return REG::SP_IDX;
+    }
+    else if (reg == "r0")
+    {
+        return REG::R0_IDX;
+    }
+    else if (reg == "r1")
+    {
+        return REG::R1_IDX;
+    }
+    else if (reg == "r2")
+    {
+        return REG::R2_IDX;
+    }
+    else if (reg == "r3")
+    {
+        return REG::R3_IDX;
+    }
+    return REG::R0_IDX;
+}
+
+TypeChainRecord::Type::DCLType cdbParser::getDCLType(Token token)
 {
+    char c1 = token.value[0];
+    char c2 = token.value[1];
     if (c1 == 'D')
     {
         if (c2 == 'A')
@@ -315,4 +295,45 @@ TypeChainRecord::Type::DCLType cdbParser::getDCLType(char c1, char c2)
         }
     }
     return TypeChainRecord::Type::DCLType::UNKNOWN;
+}
+
+std::vector<Token> cdbParser::tokenize(const std::string &line)
+{
+    std::vector<Token> tokens;
+    
+
+    for (size_t i = 0; i < line.size(); i++)
+    {
+        char c = line[i];
+
+        if (c == '(' || c == '['|| c == '{')
+        {
+            tokens.push_back(Token{Token::Type::LeftBracket});
+        }
+        else if (c == ')' || c == ']' || c == '}' )
+        {
+            tokens.push_back(Token{Token::Type::RightBracket});
+        }
+        else if (c == ':', c == ',', c == '$')
+        {
+            continue;
+        }
+        else
+        {
+            size_t start = i;
+            while (i < line.size() && line[i] != '(' && line[i] != '[' && line[i] != '{' &&
+                line[i] != ')' && line[i] != ']' && line[i] != '}' && line[i] != ':' &&
+                line[i] != ',' && line[i] != '$')
+            {
+                i++;
+            }
+            if (i > start)
+            {
+                tokens.push_back(Token{Token::Type::Text, line.substr(start, i - start)});
+                i--;
+            }
+        }
+    }
+    tokens.push_back(Token{Token::Type::LineEnd});
+    return tokens;
 }

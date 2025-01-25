@@ -8,6 +8,21 @@
 #include "DebuggerData.h"
 #include <sstream>
 
+class Token
+{
+public:
+    enum class Type
+    {
+        Unknown,
+        Text,
+        LeftBracket,
+        RightBracket,
+        LineEnd,
+    };
+    Type type;
+    std::string value;
+};
+
 class cdbParser
 {
 private:
@@ -19,15 +34,18 @@ public:
 
 private:
     // record parsers
-    void parseModule(std::istringstream& line, DebuggerData& data);
-    void parseFunction(std::istringstream& line, DebuggerData& data);
-    void parseSymbol(std::istringstream& line, DebuggerData& data);
-    void parseStructure(std::istringstream& line, DebuggerData& data);
-    void parseLinker(std::istringstream& line, DebuggerData& data);
+    void parseModule(std::vector<Token>& tokens, DebuggerData& data);
+    void parseFunction(std::vector<Token>& tokens, DebuggerData& data);
+    void parseSymbol(std::vector<Token>& tokens, DebuggerData& data);
+    void parseStructure(std::vector<Token>& tokens, DebuggerData& data);
+    void parseLinker(std::vector<Token>& tokens, DebuggerData& data);
 
     // parser helpers
-    TypeChainRecord parseTypeChain(std::istringstream& line);
+    TypeChainRecord parseTypeChain(std::vector<Token>& tokens, size_t& i);
 
-    TypeChainRecord::Type::DCLType getDCLType(char c1, char c2);
+    TypeChainRecord::Type::DCLType getDCLType(Token token);
+    REG getReg(Token token);
+
+    std::vector<Token> tokenize(const std::string& line);
 };
 #endif

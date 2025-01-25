@@ -145,10 +145,10 @@ S:Ltimer0LoadExtended$count$1$1({2}SI:S),B,1,-4
 **Examples**:
 
 ```text
-{3}DG,STTTinyBuffer:S - Generic Pointer to a TinyBuffer structure, signed (TinyBuffer*)
-{2}SI:S - Signed Integer (int)
-{2}DF,DG,DG,SL:S - Function with return type: Generic Pointer to a Generic Pointer to a Long, signed (long**)
-{500}DA25d,DA10d,DG,SI:S - array of 25 elements by 10 elements of Generic Pointer to int, signed (int* x[25][10])
+{3}DG,STTTinyBuffer:S - TinyBuffer*
+{2}SI:S - signed int
+{2}DF,DG,DG,SL:S -long** foo(...){}
+{500}DA25d,DA10d,DG,SI:S - int* x[25][10]
 ```
 
 #### 2.3.2 Address Space Codes
