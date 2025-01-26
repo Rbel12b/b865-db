@@ -4,10 +4,12 @@
 #include <string>
 #include "Parser/Parser.h"
 #include "CLI.h"
+#include "Breakpoints.h"
 
 Parser parser;
 CLI cli;
 DebuggerData *data = nullptr;
+BreakpointList breakpoints;
 
 void printModules()
 {
@@ -32,13 +34,32 @@ void handleHelpOption(const std::vector<std::string> &args)
     }
 }
 
+void dealloc()
+{
+    if (data != nullptr)
+    {
+        delete data;
+        data = nullptr;
+    }
+}
+
 int main(int argc, char *argv[])
 {
-    cli.addCommand("modules", true, [](const std::vector<std::string> &args)
+    cli.addCommand("quit", "", true, [](const std::vector<std::string> &args)
+               { dealloc(); cli.quit(args); }, "Quit the program");
+    cli.addCommand("modules", "", true, [](const std::vector<std::string> &args)
                    { printModules(); }, "Print modules from the debug file");
-    cli.addCommand("print", true, [](const std::vector<std::string> &args)
+    cli.addCommand("print", "<string>", true, [](const std::vector<std::string> &args)
                    { 
-        if (args.size() > 1) { std::cout << args[1] << std::endl; } }, "<string> Print the string");
+        if (args.size() > 1) { std::cout << args[1] << std::endl; } }, "Print the string");
+
+    cli.addCommand("break", "<position>", true, [](const std::vector<std::string> &args)
+                   { breakpoints.addBreakpoint(args, data); },
+        "Add a breakpoint at the specified location (file:line or line [in the current file])");
+
+    cli.addCommand("delete", "<id>", true, [](const std::vector<std::string> &args)
+                   { breakpoints.delBreakpoint(args); },
+        "Delete the breakpoint(s) with the specified id(s)");
 
     // Convert command-line arguments to a vector of strings
     std::vector<std::string> args(argv + 1, argv + argc);
@@ -77,10 +98,7 @@ int main(int argc, char *argv[])
 
     cli.start(help);
 
-    if (data != nullptr)
-    {
-        delete data;
-    }
+    dealloc();
 
     return 0;
 }

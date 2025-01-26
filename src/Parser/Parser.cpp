@@ -162,6 +162,7 @@ TypeRecord Parser::parseType(std::vector<Token>& tokens, size_t& i)
 LinkerRecord Parser::parseLinker(std::vector<Token>& tokens, size_t& i)
 {
     LinkerRecord record;
+    record.scope.type = Scope::Type::GLOBAL;
     {
         Token& type = tokens[i];
         record.type = LinkerRecord::Type::SYMBOL_ADDR;

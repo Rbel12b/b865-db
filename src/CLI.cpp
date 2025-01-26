@@ -4,9 +4,7 @@
 
 CLI::CLI()
 {
-    addCommand("quit", true, [this](const std::vector<std::string> &args)
-               { quitCommand(args); }, "Quit the program");
-    addCommand("help", false, [this](const std::vector<std::string> &args)
+    addCommand("help", "", false, [this](const std::vector<std::string> &args)
                { printUsage(); }, "print avaliable command and usage");
 }
 
@@ -29,11 +27,11 @@ void CLI::start(bool help)
     }
 }
 
-void CLI::addCommand(const std::string &name, bool allowShortAlias,
+void CLI::addCommand(const std::string &name, const std::string &args, bool allowShortAlias,
                 const std::function<void(const std::vector<std::string> &)> &handler,
                 const std::string &usage)
 {
-    commands[name] = {handler, allowShortAlias, usage};
+    commands[name] = {handler, allowShortAlias, usage, args};
     if (allowShortAlias && !name.empty())
     {
         char shortAlias = name[0];
@@ -208,7 +206,6 @@ void CLI::processFullCommand(const std::vector<std::string> &args)
 {
     if (args.empty())
     {
-        std::cerr << "No command provided\n";
         return;
     }
 
@@ -233,7 +230,7 @@ void CLI::processFullCommand(const std::vector<std::string> &args)
     std::cerr << "Unknown command: " << command << "\n";
 }
 
-void CLI::quitCommand(const std::vector<std::string> &args)
+void CLI::quit(const std::vector<std::string> &args)
 {
     running = false;
 }
@@ -246,11 +243,25 @@ void CLI::printUsage()
     {
         if (info.allowShortAlias)
         {
-            std::cout << std::setw(3) << name[0] << "    "  << name << " - " << info.usage << "\n";
+            if (info.args.size())
+            {
+                std::cout << std::setw(3) << name[0] << "    "  << name << " " << info.args << " - " << info.usage << "\n";
+            }
+            else
+            {
+                std::cout << std::setw(3) << name[0] << "    " << name << " - " << info.usage << "\n";
+            }
         }
         else
         {
-            std::cout << "       "  << name << " - "  << info.usage << "\n";
+            if (info.args.size())
+            {
+                std::cout << "       "  << name << " " << info.args << " - "  << info.usage << "\n";
+            }
+            else
+            {
+                std::cout << "       " << name << " - " << info.usage << "\n";
+            }
         }
     }
 }

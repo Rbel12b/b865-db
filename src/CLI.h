@@ -13,10 +13,11 @@ public:
     CLI();
 
     void start(bool help);
-    void addCommand(const std::string &name, bool allowShortAlias,
+    void addCommand(const std::string &name, const std::string &args, bool allowShortAlias,
                          const std::function<void(const std::vector<std::string> &)> &handler,
                          const std::string &usage);
     void printUsage();
+    void quit(const std::vector<std::string> &args);
 
 private:
     struct CommandInfo
@@ -24,6 +25,7 @@ private:
         std::function<void(const std::vector<std::string> &)> handler;
         bool allowShortAlias;
         std::string usage;
+        std::string args;
     };
 
     std::unordered_map<std::string, CommandInfo> commands;
@@ -35,7 +37,6 @@ private:
     void handleQuotes(char c, bool &insideQuotes, char &quoteChar);
     void processFullCommand(const std::vector<std::string> &args);
     void processCommand(const std::string &input);
-    void quitCommand(const std::vector<std::string> &args);
 };
 
 #endif
