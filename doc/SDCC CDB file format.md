@@ -252,7 +252,7 @@ T:G$TTinyBuffer[({0}S:S$pNext$0$0({3}DG,STTTinyBuffer:S),Z,0,0)({3}S:S$length$0$
 | Field             | Description                                       |
 | ----------------- | ------------------------------------------------- |
 | `Scope`           | [Scope](#212-scopes)                              |
-| `Filename`        | Filename                                          |
+| `Filename`        | Filename (Assembly files without extension)|
 | `Name`            | Symbol name                                       |
 | `Level`           | Scope level                                       |
 | `Block`           | Scope block                                       |
@@ -300,7 +300,7 @@ The Linker Symbol end address record is primarily used to indicate the Ending ad
 **Format**:
 
 ```text
-L:A$<SymbolName>$<Line>:<EndAddress>
+L:A$<Filename>$<Line>:<EndAddress>
 ```
 
 **Purpose**:
