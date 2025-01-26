@@ -16,7 +16,7 @@ void DebuggerData::addSymbol(const SymbolRecord & symbol)
     {
         globalScope.symbols.push_back(symbol);
     }
-    else if (symbol.scope.type == Scope::Type::FILE)
+    else
     {
         checkScopeExists(symbol.scope);
         if (symbol.scope.name.find('.') != std::string::npos)
@@ -36,7 +36,7 @@ void DebuggerData::addFunc(const FunctionRecord &func)
     {
         globalScope.functions.push_back(func);
     }
-    else if (func.scope.type == Scope::Type::FILE)
+    else
     {
         checkScopeExists(func.scope);
         if (func.scope.name.find('.') != std::string::npos)
@@ -46,6 +46,26 @@ void DebuggerData::addFunc(const FunctionRecord &func)
         else
         {
             fileScope[func.scope.name].functions.push_back(func);
+        }
+    }
+}
+
+void DebuggerData::addType(const TypeRecord &type)
+{
+    if (type.scope.type == Scope::Type::GLOBAL)
+    {
+        globalScope.types.push_back(type);
+    }
+    else
+    {
+        checkScopeExists(type.scope);
+        if (type.scope.name.find('.') != std::string::npos)
+        {
+            funcScope[type.scope.name].types.push_back(type);
+        }
+        else
+        {
+            fileScope[type.scope.name].types.push_back(type);
         }
     }
 }

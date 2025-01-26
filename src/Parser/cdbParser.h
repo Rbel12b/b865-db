@@ -35,10 +35,10 @@ public:
 private:
     // record parsers
     void parseModule(std::vector<Token>& tokens, size_t& i, DebuggerData& data);
-    void parseFunction(std::vector<Token>& tokens, size_t& i, DebuggerData& data);
-    void parseSymbol(std::vector<Token>& tokens, size_t& i, DebuggerData& data);
-    void parseStructure(std::vector<Token>& tokens, size_t& i, DebuggerData& data);
-    void parseLinker(std::vector<Token>& tokens, size_t& i, DebuggerData& data);
+    FunctionRecord parseFunction(std::vector<Token>& tokens, size_t& i);
+    SymbolRecord parseSymbol(std::vector<Token>& tokens, size_t& i);
+    TypeRecord parseType(std::vector<Token>& tokens, size_t& i);
+    void parseLinker(std::vector<Token>& tokens, size_t& i);
 
     // parser helpers
     TypeChainRecord parseTypeChain(std::vector<Token>& tokens, size_t& i);

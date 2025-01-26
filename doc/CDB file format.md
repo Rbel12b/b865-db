@@ -7,7 +7,7 @@ This document is based on this [CDB File Format Documentation](https://sourcefor
 The record examples and grammar shown in this document are displayed on multiple lines for readability. However, the records within the CDB files are always encoded on a single line.
 
 - **Record Elements**: Enclosed with `<` and `>`.
-- **Optional Items**: Enclosed in `{` and `}`.
+- **Repeating Elements**: Enclosed in `[` and `]`.
 - **Comments**: Starting with `//`.
 
 ## 2. Record Formats
@@ -58,6 +58,7 @@ foo()
 | `Scope`         | `G`: Global scope                                    |
 |                 | `F<Filename>`: File scope                            |
 |                 | `L<Filename>.<Function>`: Function scope             |
+|                 | `S`: Structure (Only in symbol records)              |
 
 ### 2.2 Module Record
 
@@ -121,7 +122,7 @@ S:Ltimer0LoadExtended$count$1$1({2}SI:S),B,1,-4
 **Format**:
 
 ```text
-<{Size}>DCLType,{DCLType}:<Sign>
+{<Size>}[<DLCType>]:<Sign>
 ```
 
 #### 2.3.1.1 DCL Types
@@ -205,14 +206,14 @@ F:G$SioISR$0$0({2}DF,SV:S),Z,0,0,1,4,0
 
 | Field          | Description                              |
 | -------------- | ---------------------------------------- |
-| `Filename`     | The filename where this type is declared |
+| `Scope`        | [Scope](#212-scopes) of the type         |
 | `Name`         | The name of this type                    |
 | `TypeMember`   | Detailed type description (see below)    |
 
 **Format**:
 
 ```text
-T:<Filename>$<Name>[<TypeMember>]
+T:<Scope>$<Name>[<TypeMember>]
 ```
 
 #### 2.4.1 Type Member
@@ -225,7 +226,7 @@ T:<Filename>$<Name>[<TypeMember>]
 **Format**:
 
 ```text
-{<Offset>}<SymbolRecord>
+({<Offset>}<SymbolRecord>)
 ```
 
 **Example**:
@@ -243,10 +244,7 @@ typedef struct TinyBuffer
 Type record:
 
 ```text
-T:G$TTinyBuffer[
-  ({0}S:S$pNext$0$0({3}DG,STTTinyBuffer:S),Z,0,0)
-  ({3}S:S$length$0$0({1}SC:U),Z,0,0)
-]
+T:G$TTinyBuffer[({0}S:S$pNext$0$0({3}DG,STTTinyBuffer:S),Z,0,0)({3}S:S$length$0$0({1}SC:U),Z,0,0)]
 ```
 
 ### 2.5 Link Record

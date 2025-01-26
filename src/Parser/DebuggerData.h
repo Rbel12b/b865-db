@@ -69,8 +69,9 @@ public:
     enum class Type
     {
         GLOBAL = 'G',
-        FUNCTION = 'F',
-        FILE = 'L',
+        FUNCTION = 'L',
+        FILE = 'F',
+        STRUCT = 'S',
         UNKNOWN,
     };
     Type type = Type::UNKNOWN;
@@ -121,11 +122,27 @@ public:
     int regBankNum = 0;
 };
 
+class TypeMember
+{
+public:
+    int offset = 0;
+    SymbolRecord member;
+};
+
+class TypeRecord
+{
+public:
+    Scope scope;
+    std::string name;
+    std::vector<TypeMember> members;
+};
+
 class ScopeData
 {
 public:
     std::vector<SymbolRecord> symbols;
     std::vector<FunctionRecord> functions;
+    std::vector<TypeRecord> types;
 };
 class DebuggerData
 {
@@ -140,6 +157,7 @@ public:
     void addModule(const std::string& module);
     void addSymbol(const SymbolRecord& symbol);
     void addFunc(const FunctionRecord& func);
+    void addType(const TypeRecord& type);
 
 private: 
     void checkScopeExists(Scope scope);

@@ -42,19 +42,19 @@ DebuggerData *cdbParser::parse()
             break;
 
         case 'F':
-            parseFunction(tokens, i, data);
+            data.addFunc(parseFunction(tokens, i));
             break;
 
         case 'S':
-            parseSymbol(tokens, i, data);
+            data.addSymbol(parseSymbol(tokens, i));
             break;
 
         case 'T':
-            parseStructure(tokens, i, data);
+            data.addType(parseType(tokens, i));
             break;
 
         case 'L':
-            parseLinker(tokens, i, data);
+            parseLinker(tokens, i);
             break;
         
         default:
@@ -75,12 +75,12 @@ void cdbParser::parseModule(std::vector<Token>& tokens, size_t& i, DebuggerData 
     data.addModule(tokens[0].value);
 }
 
-void cdbParser::parseFunction(std::vector<Token>& tokens, size_t& i, DebuggerData &data)
+FunctionRecord cdbParser::parseFunction(std::vector<Token>& tokens, size_t& i)
 {
     FunctionRecord func;
     if (tokens.size() < 14)
     {
-        return;
+        return func;
     }
     parseScopeNameLevelBlock(tokens, i, func);
     func.typeChain = parseTypeChain(tokens, i);
@@ -90,26 +90,26 @@ void cdbParser::parseFunction(std::vector<Token>& tokens, size_t& i, DebuggerDat
     func.interrupt = (tokens[i++].value[0] != '0');
     func.interruptNum = std::stoi(tokens[i++].value);
     func.regBankNum = std::stoi(tokens[i++].value);
-    data.addFunc(func);
+    return func;
 }
 
-void cdbParser::parseSymbol(std::vector<Token>& tokens, size_t& i, DebuggerData &data)
+SymbolRecord cdbParser::parseSymbol(std::vector<Token>& tokens, size_t& i)
 {
     SymbolRecord symbol;
     if (tokens.size() < 12)
     {
-        return;
+        return symbol;
     }
     parseScopeNameLevelBlock(tokens, i, symbol);
     symbol.typeChain = parseTypeChain(tokens, i);
     symbol.addressSpace = (AddressSpace)tokens[i++].value[0];
     symbol.onStack = (tokens[i++].value[0] != '0');
     symbol.stack_offs = std::stoi(tokens[i++].value);
-    if (tokens[i].type != Token::Type::LineEnd)
+    if (tokens[i].type == Token::Type::LeftBracket)
     {
-        while (tokens[i].type != Token::Type::LineEnd)
+        while (tokens[i].type != Token::Type::RightBracket)
         {
-            if (tokens[i].type == Token::Type::LeftBracket || tokens[i].type == Token::Type::RightBracket)
+            if (tokens[i].type == Token::Type::LeftBracket)
             {
                 i++;
                 continue;
@@ -117,14 +117,54 @@ void cdbParser::parseSymbol(std::vector<Token>& tokens, size_t& i, DebuggerData 
             symbol.registers.push_back(getReg(tokens[i++]));
         }
     }
-    data.addSymbol(symbol);
+    if (tokens[i].type == Token::Type::RightBracket)
+    {
+        i++;
+    }
+    return symbol;
 }
 
-void cdbParser::parseStructure(std::vector<Token>& tokens, size_t& i, DebuggerData &data)
+TypeRecord cdbParser::parseType(std::vector<Token>& tokens, size_t& i)
 {
+    TypeRecord type;
+    if (tokens.size() < 4)
+    {
+        return type;
+    }
+    type.scope.type = (Scope::Type)tokens[i++].value[0];
+    if (type.scope.type != Scope::Type::GLOBAL)
+    {
+        type.scope.name = tokens[i - 1].value.substr(1);
+    }
+    type.name = tokens[i++].value;
+    while (tokens[i].type != Token::Type::RightBracket && tokens[i].type != Token::Type::LineEnd)
+    {
+        while (tokens[i].type == Token::Type::LeftBracket)
+        {
+            i++;
+        }
+        TypeMember member;
+        member.offset = std::stoi(tokens[i++].value);
+        if (tokens[i].type == Token::Type::RightBracket)
+        {
+            i++;
+        }
+        if (tokens[i].type == Token::Type::Text &&
+            tokens[i].value == "S") // Symbol record begins with "S"
+        {
+            i++;
+        }
+        member.member = parseSymbol(tokens, i);
+        type.members.push_back(member);
+        if (tokens[i].type == Token::Type::RightBracket)
+        {
+            i++;
+        }
+    }
+    return type;
 }
 
-void cdbParser::parseLinker(std::vector<Token>& tokens, size_t& i, DebuggerData &data)
+void cdbParser::parseLinker(std::vector<Token>& tokens, size_t& i)
 {
 }
 
@@ -173,7 +213,7 @@ TypeChainRecord cdbParser::parseTypeChain(std::vector<Token>& tokens, size_t& i)
             else if (type.DCLtype == TypeChainRecord::Type::DCLType::BITFIELD)
             {
                 type.num.bitField.offset = strtoull(token.value.substr(2).c_str(), nullptr, 10);
-                type.num.bitField.size = strtoull(token.value.substr(token.value.find_first_of('$') + 1).c_str(), nullptr, 10);
+                type.num.bitField.size = strtoull(tokens[++i].value.c_str(), nullptr, 10);
             }
             typeChain.types.push_back(type);
         }
@@ -189,7 +229,7 @@ TypeChainRecord cdbParser::parseTypeChain(std::vector<Token>& tokens, size_t& i)
 void cdbParser::parseScopeNameLevelBlock(std::vector<Token> &tokens, size_t &i, ScopeNameLevelBlock &data)
 {
     data.scope.type = (Scope::Type)tokens[i++].value[0];
-    if (data.scope.type != Scope::Type::GLOBAL)
+    if (data.scope.type != Scope::Type::GLOBAL && data.scope.type != Scope::Type::STRUCT)
     {
         data.scope.name = tokens[i - 1].value.substr(1);
     }
