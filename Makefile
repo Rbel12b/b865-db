@@ -23,7 +23,7 @@ APP = b865-db$(EXE_EXT)
 all: build run 
 
 run: $(APP)
-	./$(APP) -h
+	./$(APP) --help
 
 build: $(APP)
 
