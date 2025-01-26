@@ -9,8 +9,16 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
-    - name: make
-      run: make
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Configure and build the project
+    - name: Build
+      run: |
+        mkdir build
+        mkdir build/Parser
+        mkdir build/Emulator
+        make
