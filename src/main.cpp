@@ -1,4 +1,7 @@
 #include <iostream>
+#include <algorithm>
+#include <vector>
+#include <string>
 #include "Parser/Parser.h"
 #include "CLI.h"
 
@@ -10,40 +13,45 @@ void printModules()
 {
     if (data != nullptr)
     {
-        printf("Modules:\n");
-        for (auto &str : data->modules)
+        std::cout << "Modules:\n";
+        for (const auto &str : data->modules)
         {
-            printf("    %s\n", str.c_str());
+            std::cout << "    " << str << "\n";
         }
+    }
+}
+
+void handleHelpOption(const std::vector<std::string> &args)
+{
+    if (std::find(args.begin(), args.end(), "-h") != args.end() ||
+        std::find(args.begin(), args.end(), "--help") != args.end() ||
+        std::find(args.begin(), args.end(), "-help") != args.end())
+    {
+        cli.printUsage();
+        exit(0);
     }
 }
 
 int main(int argc, char *argv[])
 {
     cli.addCommand("modules", true, [](const std::vector<std::string> &args)
-                   { printModules(); }, "print Modules from the debug file");
+                   { printModules(); }, "Print modules from the debug file");
     cli.addCommand("print", true, [](const std::vector<std::string> &args)
-                   { if (args.size() > 1) { printf("%s\n", args[1].c_str()); } }, "<string> Print the string");
+                   { 
+        if (args.size() > 1) { std::cout << args[1] << std::endl; } }, "<string> Print the string");
+
     // Convert command-line arguments to a vector of strings
-    std::vector<std::string> args;
-    for (int i = 1; i < argc; ++i)
-    {
-        args.emplace_back(argv[i]);
-    }
+    std::vector<std::string> args(argv + 1, argv + argc);
 
     bool help = false;
     bool inFile = false;
-    std::string filename = "";
+    std::string filename;
 
-    auto it = std::find(args.begin(), args.end(), std::string("--help"));
-    if (it != args.end())
-    {
-        help = true;
-    }
+    handleHelpOption(args);
 
     for (const auto &arg : args)
     {
-        if (arg != "--help")
+        if (arg[0] != '-')
         {
             inFile = true;
             filename = arg;
@@ -54,25 +62,25 @@ int main(int argc, char *argv[])
     if (inFile)
     {
         data = parser.parse(filename);
+        if (data == nullptr)
+        {
+            std::cerr << "Error parsing file: " << filename << std::endl;
+            return 1;
+        }
     }
     else
     {
-        printf("No input file specified.\n");
-        if (!help)
-        {
-            return 1;
-        }
-        else
-        {
-            cli.printUsage();
-            return 0;
-        }
+        std::cout << "No input file specified.\n";
+        cli.printUsage();
+        return help == true ? 0 : 1;
     }
+
     cli.start(help);
 
     if (data != nullptr)
     {
         delete data;
     }
+
     return 0;
 }
