@@ -101,6 +101,7 @@ int main(int argc, char *argv[])
         if (data == nullptr)
         {
             std::cerr << "Error parsing file: " << filename << std::endl;
+            emulator.terminate();
             return 1;
         }
     }
@@ -108,6 +109,7 @@ int main(int argc, char *argv[])
     {
         std::cout << "No input file specified.\n";
         cli.printUsage();
+        emulator.terminate();
         return help == true ? 0 : 1;
     }
 
@@ -116,6 +118,7 @@ int main(int argc, char *argv[])
     if (help)
     {
         cli.printUsage();
+        emulator.terminate();
         return 0;
     }
 
