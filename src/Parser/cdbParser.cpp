@@ -33,26 +33,28 @@ DebuggerData *cdbParser::parse()
 
         std::vector<Token> tokens = tokenize(linestr.substr(2));
 
+        size_t i = 0;
+
         switch (type)
         {
         case 'M':
-            parseModule(tokens, data);
+            parseModule(tokens, i, data);
             break;
 
         case 'F':
-            parseFunction(tokens, data);
+            parseFunction(tokens, i, data);
             break;
 
         case 'S':
-            parseSymbol(tokens, data);
+            parseSymbol(tokens, i, data);
             break;
 
         case 'T':
-            parseStructure(tokens, data);
+            parseStructure(tokens, i, data);
             break;
 
         case 'L':
-            parseLinker(tokens, data);
+            parseLinker(tokens, i, data);
             break;
         
         default:
@@ -64,7 +66,7 @@ DebuggerData *cdbParser::parse()
     return ptrdata;
 }
 
-void cdbParser::parseModule(std::vector<Token>& tokens, DebuggerData &data)
+void cdbParser::parseModule(std::vector<Token>& tokens, size_t& i, DebuggerData &data)
 {
     if (tokens.size() < 1)
     {
@@ -73,14 +75,13 @@ void cdbParser::parseModule(std::vector<Token>& tokens, DebuggerData &data)
     data.addModule(tokens[0].value);
 }
 
-void cdbParser::parseFunction(std::vector<Token>& tokens, DebuggerData &data)
+void cdbParser::parseFunction(std::vector<Token>& tokens, size_t& i, DebuggerData &data)
 {
     FunctionRecord func;
     if (tokens.size() < 14)
     {
         return;
     }
-    size_t i = 0;
     parseScopeNameLevelBlock(tokens, i, func);
     func.typeChain = parseTypeChain(tokens, i);
     func.addressSpace = (AddressSpace)tokens[i++].value[0];
@@ -92,14 +93,13 @@ void cdbParser::parseFunction(std::vector<Token>& tokens, DebuggerData &data)
     data.addFunc(func);
 }
 
-void cdbParser::parseSymbol(std::vector<Token>& tokens, DebuggerData &data)
+void cdbParser::parseSymbol(std::vector<Token>& tokens, size_t& i, DebuggerData &data)
 {
     SymbolRecord symbol;
     if (tokens.size() < 12)
     {
         return;
     }
-    size_t i = 0;
     parseScopeNameLevelBlock(tokens, i, symbol);
     symbol.typeChain = parseTypeChain(tokens, i);
     symbol.addressSpace = (AddressSpace)tokens[i++].value[0];
@@ -120,11 +120,11 @@ void cdbParser::parseSymbol(std::vector<Token>& tokens, DebuggerData &data)
     data.addSymbol(symbol);
 }
 
-void cdbParser::parseStructure(std::vector<Token>& tokens, DebuggerData &data)
+void cdbParser::parseStructure(std::vector<Token>& tokens, size_t& i, DebuggerData &data)
 {
 }
 
-void cdbParser::parseLinker(std::vector<Token>& tokens, DebuggerData &data)
+void cdbParser::parseLinker(std::vector<Token>& tokens, size_t& i, DebuggerData &data)
 {
 }
 
