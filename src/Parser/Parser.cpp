@@ -2,16 +2,11 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
-#include "cdbParser.h"
+#include "Parser.h"
 
-void cdbParser::init(std::filesystem::path filename)
+DebuggerData *Parser::parse(std::filesystem::path filename)
 {
-    cdbFilename = filename;
-}
-
-DebuggerData *cdbParser::parse()
-{
-    std::ifstream file(cdbFilename.string());
+    std::ifstream file(filename.string());
     if (!file.is_open())
     {
         return nullptr;
@@ -66,7 +61,7 @@ DebuggerData *cdbParser::parse()
     return ptrdata;
 }
 
-void cdbParser::parseModule(std::vector<Token>& tokens, size_t& i, DebuggerData &data)
+void Parser::parseModule(std::vector<Token>& tokens, size_t& i, DebuggerData &data)
 {
     if (tokens.size() < 1)
     {
@@ -75,7 +70,7 @@ void cdbParser::parseModule(std::vector<Token>& tokens, size_t& i, DebuggerData 
     data.addModule(tokens[0].value);
 }
 
-FunctionRecord cdbParser::parseFunction(std::vector<Token>& tokens, size_t& i)
+FunctionRecord Parser::parseFunction(std::vector<Token>& tokens, size_t& i)
 {
     FunctionRecord func;
     if (tokens.size() < 14)
@@ -93,7 +88,7 @@ FunctionRecord cdbParser::parseFunction(std::vector<Token>& tokens, size_t& i)
     return func;
 }
 
-SymbolRecord cdbParser::parseSymbol(std::vector<Token>& tokens, size_t& i)
+SymbolRecord Parser::parseSymbol(std::vector<Token>& tokens, size_t& i)
 {
     SymbolRecord symbol;
     if (tokens.size() < 12)
@@ -124,7 +119,7 @@ SymbolRecord cdbParser::parseSymbol(std::vector<Token>& tokens, size_t& i)
     return symbol;
 }
 
-TypeRecord cdbParser::parseType(std::vector<Token>& tokens, size_t& i)
+TypeRecord Parser::parseType(std::vector<Token>& tokens, size_t& i)
 {
     TypeRecord type;
     if (tokens.size() < 4)
@@ -164,7 +159,7 @@ TypeRecord cdbParser::parseType(std::vector<Token>& tokens, size_t& i)
     return type;
 }
 
-LinkerRecord cdbParser::parseLinker(std::vector<Token>& tokens, size_t& i)
+LinkerRecord Parser::parseLinker(std::vector<Token>& tokens, size_t& i)
 {
     LinkerRecord record;
     {
@@ -209,7 +204,7 @@ LinkerRecord cdbParser::parseLinker(std::vector<Token>& tokens, size_t& i)
     return record;
 }
 
-TypeChainRecord cdbParser::parseTypeChain(std::vector<Token>& tokens, size_t& i)
+TypeChainRecord Parser::parseTypeChain(std::vector<Token>& tokens, size_t& i)
 {
     TypeChainRecord typeChain;
     if (tokens.size() < 2)
@@ -267,7 +262,7 @@ TypeChainRecord cdbParser::parseTypeChain(std::vector<Token>& tokens, size_t& i)
     return typeChain;
 }
 
-void cdbParser::parseScopeNameLevelBlock(std::vector<Token> &tokens, size_t &i, ScopeNameLevelBlock &data)
+void Parser::parseScopeNameLevelBlock(std::vector<Token> &tokens, size_t &i, ScopeNameLevelBlock &data)
 {
     data.scope.type = (Scope::Type)tokens[i++].value[0];
     if (data.scope.type != Scope::Type::GLOBAL && data.scope.type != Scope::Type::STRUCT)
@@ -279,7 +274,7 @@ void cdbParser::parseScopeNameLevelBlock(std::vector<Token> &tokens, size_t &i, 
     data.block = std::stoi(tokens[i++].value);
 }
 
-REG cdbParser::getReg(Token token)
+REG Parser::getReg(Token token)
 { 
     std::string reg = token.value;
     if (reg == "a")
@@ -317,7 +312,7 @@ REG cdbParser::getReg(Token token)
     return REG::R0_IDX;
 }
 
-TypeChainRecord::Type::DCLType cdbParser::getDCLType(Token token)
+TypeChainRecord::Type::DCLType Parser::getDCLType(Token token)
 {
     char c1 = token.value[0];
     char c2 = token.value[1];
@@ -398,7 +393,7 @@ TypeChainRecord::Type::DCLType cdbParser::getDCLType(Token token)
     return TypeChainRecord::Type::DCLType::UNKNOWN;
 }
 
-std::vector<Token> cdbParser::tokenize(const std::string &line)
+std::vector<Token> Parser::tokenize(const std::string &line)
 {
     std::vector<Token> tokens;
     

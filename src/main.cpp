@@ -1,16 +1,14 @@
 #include <iostream>
-#include "Parser/cdbParser.h"
+#include "Parser/Parser.h"
 
-cdbParser parser;
+Parser parser;
 
 int main(int argc, char *argv[])
 {
 
     if(argc >= 2)
     {
-        parser.init(argv[1]);
-
-        DebuggerData* data = parser.parse();
+        DebuggerData* data = parser.parse(argv[1]);
         if(data != NULL)
         {
             printf("Modules:\n");

@@ -1,6 +1,6 @@
 #pragma once
-#ifndef _CDB_PARSER_H_
-#define _CDB_PARSER_H_
+#ifndef _B865_DB_PARSER_H_
+#define _B865_DB_PARSER_H_
 
 #include <string>
 #include <vector>
@@ -23,14 +23,13 @@ public:
     std::string value;
 };
 
-class cdbParser
+class Parser
 {
 private:
     std::filesystem::path cdbFilename;
     
 public:
-    void init(std::filesystem::path filename);
-    DebuggerData* parse();
+    DebuggerData* parse(std::filesystem::path filename);
 
 private:
     // record parsers
