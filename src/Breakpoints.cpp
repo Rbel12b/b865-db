@@ -116,6 +116,7 @@ void BreakpointList::addBreakpoint(std::string &file, size_t &line, DebuggerData
     }
     printf("Breakpoint %d at 0x%04x: file %s, line %d.\n", bp.id, bp.addr, file.c_str(), line);
     breakpoints.push_back(bp);
+    updateAddresses();
 }
 
 void BreakpointList::addBreakpoint(const std::vector<std::string> &args, DebuggerData *data)
@@ -201,5 +202,15 @@ void BreakpointList::delBreakpoint(const std::vector<std::string> &args)
                 break;
             }
         }
+    }
+    updateAddresses();
+}
+
+void BreakpointList::updateAddresses()
+{
+    addresses.clear();
+    for (auto &bp : breakpoints)
+    {
+        addresses.push_back(bp.addr);
     }
 }

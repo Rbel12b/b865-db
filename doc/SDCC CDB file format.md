@@ -300,7 +300,7 @@ The Linker Symbol end address record is primarily used to indicate the Ending ad
 **Format**:
 
 ```text
-L:A$<Filename>$<Line>:<EndAddress>
+L:A$<SymbolName>$<Line>:<EndAddress>
 ```
 
 **Purpose**:

@@ -12,7 +12,7 @@ class CLI
 public:
     CLI();
 
-    void start(bool help);
+    bool run();
     void addCommand(const std::string &name, const std::string &args, bool allowShortAlias,
                          const std::function<void(const std::vector<std::string> &)> &handler,
                          const std::string &usage);

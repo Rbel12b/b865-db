@@ -26,11 +26,13 @@ class BreakpointList
 {
 public:
     std::vector<Breakpoint> breakpoints;
+    std::vector<uint16_t> addresses;
     size_t id = 0;
     void addBreakpoint(std::string& file, size_t& line, DebuggerData* data);
     void addBreakpoint(const std::vector<std::string> &args, DebuggerData* data);
     void delBreakpoint(size_t id);
     void delBreakpoint(const std::vector<std::string> &args);
+    void updateAddresses();
 };
 
 #endif

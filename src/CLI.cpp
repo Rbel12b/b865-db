@@ -8,23 +8,14 @@ CLI::CLI()
                { printUsage(); }, "print avaliable command and usage");
 }
 
-void CLI::start(bool help)
+bool CLI::run()
 {
-    if (help)
-    {
-        printUsage();
-        return;
-    }
-
     std::string line;
-    std::cout << "b865-debugger (type 'quit' or 'q' to exit, 'help' for usage)\n";
-    while (running)
-    {
-        std::cout << ">> ";
-        if (!std::getline(std::cin, line))
-            break;
-        processCommand(line);
-    }
+    std::cout << ">> ";
+    if (!std::getline(std::cin, line))
+        return false;
+    processCommand(line);
+    return !running;
 }
 
 void CLI::addCommand(const std::string &name, const std::string &args, bool allowShortAlias,

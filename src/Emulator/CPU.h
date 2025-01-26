@@ -123,9 +123,12 @@ public:
     void startExec();
     void stopPheripherials();
     const CPU_Status &getStatus();
+    void setBreakpoints(std::vector<uint16_t>& breakpoints);
 
 public:
     MEMORY mem;
+    bool stoppedAtBreakpoint = false;
+    size_t breakpointNum = 0;
 
 private:
     void executeSignals();
@@ -133,6 +136,7 @@ private:
     uint8_t calcALUOut();
 
 private:
+    std::vector<uint16_t>* m_breakpoints;
     int m_cycle = 0;
 };
 

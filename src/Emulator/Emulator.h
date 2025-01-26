@@ -18,15 +18,22 @@ public:
     int init();
     int load(std::string filename, std::string path = "");
     int load(std::vector<uint8_t> &programData);
+    void setBreakpoints(std::vector<uint16_t>& breakpoints);
     std::chrono::nanoseconds getRunTime_ns();
     void start();
     void stop();
+    void terminate();
+    bool paused();
+    bool clockRunning();
+    void continue_exec();
+
+public:
+    CPU &m_cpu;
 
 private:
 
 private:
     Clock m_clock;
-    CPU &m_cpu;
     MEMORY &m_mem;
 };
 

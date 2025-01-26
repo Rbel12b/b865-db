@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <filesystem>
+#include <algorithm>
 
 std::vector<std::string> IO_regNames =
     {
@@ -60,7 +61,7 @@ int CPU::loadProgramFromFile(std::string filename)
 
     std::filesystem::path path(filename);
 
-    if (path.extension() == ".bin")
+    if (path.extension() != ".bin")
     {
         fprintf(stdout, "Not a .bin file: %s\n", filename.c_str());
     }
@@ -109,8 +110,23 @@ const CPU_Status &CPU::getStatus()
     return *this;
 }
 
+void CPU::setBreakpoints(std::vector<uint16_t> &breakpoints)
+{
+    m_breakpoints = &breakpoints;
+}
+
 void CPU::cycle()
 {
+    auto it = std::find(m_breakpoints->begin(), m_breakpoints->end(), PC.addr);
+    if (it != m_breakpoints->end())
+    {
+        stoppedAtBreakpoint = true;
+        breakpointNum = std::distance(m_breakpoints->begin(), it);
+    }
+    if (stoppedAtBreakpoint)
+    {
+        return;
+    }
     if (signals.HLT)
     {
         return;
