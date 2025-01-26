@@ -137,12 +137,29 @@ public:
     std::vector<TypeMember> members;
 };
 
+class LinkerRecord : public ScopeNameLevelBlock
+// name contains filename when type is *_LINE
+{
+public:
+    enum class Type
+    {
+        SYMBOL_ADDR,
+        SYMBOL_END_ADDR,
+        ASM_LINE,
+        C_LINE,
+    };
+    Type type;
+    size_t line = 0;
+    size_t addr = 0;
+};
+
 class ScopeData
 {
 public:
     std::vector<SymbolRecord> symbols;
     std::vector<FunctionRecord> functions;
     std::vector<TypeRecord> types;
+    std::vector<LinkerRecord> linkerRecords;
 };
 class DebuggerData
 {
@@ -158,6 +175,7 @@ public:
     void addSymbol(const SymbolRecord& symbol);
     void addFunc(const FunctionRecord& func);
     void addType(const TypeRecord& type);
+    void addLinkerRecord(const LinkerRecord& record);
 
 private: 
     void checkScopeExists(Scope scope);

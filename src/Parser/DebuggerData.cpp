@@ -70,6 +70,26 @@ void DebuggerData::addType(const TypeRecord &type)
     }
 }
 
+void DebuggerData::addLinkerRecord(const LinkerRecord &record)
+{
+    if (record.scope.type == Scope::Type::GLOBAL)
+    {
+        globalScope.linkerRecords.push_back(record);
+    }
+    else
+    {
+        checkScopeExists(record.scope);
+        if (record.scope.name.find('.') != std::string::npos)
+        {
+            funcScope[record.scope.name].linkerRecords.push_back(record);
+        }
+        else
+        {
+            fileScope[record.scope.name].linkerRecords.push_back(record);
+        }
+    }
+}
+
 void DebuggerData::checkScopeExists(Scope scope)
 {
     if (scope.name.find('.') != std::string::npos)

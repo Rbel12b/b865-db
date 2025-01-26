@@ -38,7 +38,7 @@ private:
     FunctionRecord parseFunction(std::vector<Token>& tokens, size_t& i);
     SymbolRecord parseSymbol(std::vector<Token>& tokens, size_t& i);
     TypeRecord parseType(std::vector<Token>& tokens, size_t& i);
-    void parseLinker(std::vector<Token>& tokens, size_t& i);
+    LinkerRecord parseLinker(std::vector<Token>& tokens, size_t& i);
 
     // parser helpers
     TypeChainRecord parseTypeChain(std::vector<Token>& tokens, size_t& i);

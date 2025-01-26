@@ -54,7 +54,7 @@ DebuggerData *cdbParser::parse()
             break;
 
         case 'L':
-            parseLinker(tokens, i);
+            data.addLinkerRecord(parseLinker(tokens, i));
             break;
         
         default:
@@ -164,8 +164,49 @@ TypeRecord cdbParser::parseType(std::vector<Token>& tokens, size_t& i)
     return type;
 }
 
-void cdbParser::parseLinker(std::vector<Token>& tokens, size_t& i)
+LinkerRecord cdbParser::parseLinker(std::vector<Token>& tokens, size_t& i)
 {
+    LinkerRecord record;
+    {
+        Token& type = tokens[i];
+        record.type = LinkerRecord::Type::SYMBOL_ADDR;
+        if (type.value[0] == 'X')
+        {
+            record.type = LinkerRecord::Type::SYMBOL_END_ADDR;
+            type.value = type.value.substr(1);
+        }
+        else if (type.value[0] == 'A')
+        {
+            record.type = LinkerRecord::Type::ASM_LINE;
+            i++;
+        }
+        else if (type.value[0] == 'C')
+        {
+            record.type = LinkerRecord::Type::C_LINE;
+            i++;
+        }
+    }
+    if (record.type == LinkerRecord::Type::SYMBOL_ADDR ||
+        record.type == LinkerRecord::Type::SYMBOL_END_ADDR)
+    {
+        parseScopeNameLevelBlock(tokens, i, record);
+        record.addr = std::stoul(tokens[i++].value, 0, 16);
+    }
+    else if (record.type == LinkerRecord::Type::ASM_LINE)
+    {
+        record.name = tokens[i++].value;
+        record.line = std::stoi(tokens[i++].value);
+        record.addr = std::stoul(tokens[i++].value, 0, 16);
+    }
+    else
+    {
+        record.name = tokens[i++].value;
+        record.line = std::stoi(tokens[i++].value);
+        record.level = std::stoi(tokens[i++].value);
+        record.block = std::stoi(tokens[i++].value);
+        record.addr = std::stoul(tokens[i++].value, 0, 16);
+    }
+    return record;
 }
 
 TypeChainRecord cdbParser::parseTypeChain(std::vector<Token>& tokens, size_t& i)
