@@ -45,6 +45,15 @@ Clock::Clock(void (*_cycle_func)(void))
 {
 }
 
+Clock::~Clock()
+{
+    end = true;
+    if (clockThread.joinable())
+    {
+        clockThread.join();
+    }
+}
+
 void Clock::init()
 {
     end = false;
@@ -152,8 +161,6 @@ void Clock::clockThreadFunc()
     pinThreadToCore((std::thread::native_handle_type)GetCurrentThread(), 0); // Pin to core 0
     setThreadPriority((std::thread::native_handle_type)GetCurrentThread(), true); // Set high priority
 #else
-    pinThreadToCore(clockThread.native_handle(), 0); // Pin to core 0
-    setThreadPriority(clockThread.native_handle(), true); // Set high priority
 #endif
 
     bool sleep = (m_fq.sleep > 25);

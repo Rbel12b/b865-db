@@ -36,13 +36,16 @@ void handleHelpOption(const std::vector<std::string> &args)
     }
 }
 
-void dealloc()
+void deallocExit(int code = 0)
 {
     if (data != nullptr)
     {
         delete data;
         data = nullptr;
     }
+    emulator.terminate();
+    emulator.stop();
+    exit(code);
 }
 
 int main(int argc, char *argv[])
@@ -51,7 +54,7 @@ int main(int argc, char *argv[])
     emulator.setBreakpoints(breakpoints.addresses);
 
     cli.addCommand("quit", "", true, [](const std::vector<std::string> &args)
-               { dealloc(); cli.quit(args); }, "Quit the program");
+               { deallocExit(); cli.quit(args); }, "Quit the program");
     cli.addCommand("modules", "", true, [](const std::vector<std::string> &args)
                    { printModules(); }, "Print modules from the debug file");
     cli.addCommand("print", "<string>", true, [](const std::vector<std::string> &args)
@@ -101,7 +104,7 @@ int main(int argc, char *argv[])
         if (data == nullptr)
         {
             std::cerr << "Error parsing file: " << filename << std::endl;
-            emulator.terminate();
+            deallocExit(1);
             return 1;
         }
     }
@@ -109,8 +112,8 @@ int main(int argc, char *argv[])
     {
         std::cout << "No input file specified.\n";
         cli.printUsage();
-        emulator.terminate();
-        return help == true ? 0 : 1;
+        deallocExit(help == true ? 0 : 1);
+        return 1;
     }
 
     std::cout << "b865-debugger (type 'quit' or 'q' to exit, 'help' for usage)\n";
@@ -118,7 +121,7 @@ int main(int argc, char *argv[])
     if (help)
     {
         cli.printUsage();
-        emulator.terminate();
+        deallocExit();
         return 0;
     }
 
@@ -138,7 +141,7 @@ int main(int argc, char *argv[])
 
     emulator.terminate();
 
-    dealloc();
+    deallocExit();
 
     return 0;
 }
