@@ -67,7 +67,7 @@ void CLI::parseArguments(const std::string &input, std::vector<std::string> &arg
         handleQuotes(c, insideQuotes, quoteChar);
 
         // If we're inside quotes, accumulate the characters
-        if (insideQuotes && c != '\"' && c != '\'')
+        if (insideQuotes && c != quoteChar)
         {
             currentArg += c;
         }
@@ -79,7 +79,7 @@ void CLI::parseArguments(const std::string &input, std::vector<std::string> &arg
                 currentArg.clear();
             }
         }
-        else if (c != '\"' && c != '\'')
+        else if (c != '\'' && c != '"')
         {
             currentArg += c; // Add regular characters
         }
