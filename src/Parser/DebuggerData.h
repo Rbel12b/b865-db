@@ -153,6 +153,13 @@ public:
     size_t addr = 0;
 };
 
+class LineData
+{
+public:
+    std::string filename;
+    size_t line = 0;
+};
+
 class ScopeData
 {
 public:
@@ -161,6 +168,7 @@ public:
     std::vector<TypeRecord> types;
     std::vector<LinkerRecord> linkerRecords;
 };
+
 class DebuggerData
 {
 public:
@@ -176,6 +184,8 @@ public:
     void addFunc(const FunctionRecord& func);
     void addType(const TypeRecord& type);
     void addLinkerRecord(const LinkerRecord& record);
+
+    LineData getLine(size_t addr);
 
 private: 
     void checkScopeExists(Scope scope);

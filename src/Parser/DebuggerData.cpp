@@ -90,6 +90,42 @@ void DebuggerData::addLinkerRecord(const LinkerRecord &record)
     }
 }
 
+LineData DebuggerData::getLine(size_t addr)
+{
+    // Find the file and line number for the given address
+    size_t index = 0;
+    size_t prevIndex = 0;
+    size_t nextIndex = 0;
+    for (const auto& line : globalScope.linkerRecords)
+    {
+        if (line.type != LinkerRecord::Type::ASM_LINE && line.type != LinkerRecord::Type::C_LINE)
+        {
+            index++;
+            continue;
+        }
+
+        if (line.addr <= addr)
+        {
+            prevIndex = index;
+        }
+        else if (line.addr > addr)
+        {
+            nextIndex = index;
+            break;
+        }
+        index++;
+    }
+    LineData lineData;
+    LinkerRecord& record = 
+        ((globalScope.linkerRecords[nextIndex].addr < addr) ?
+        globalScope.linkerRecords[prevIndex] :
+        globalScope.linkerRecords[nextIndex]);
+
+    lineData.filename = record.name + ((record.type == LinkerRecord::Type::ASM_LINE) ? ".asm" : ".c");
+    lineData.line = record.line;
+    return lineData;
+}
+
 void DebuggerData::checkScopeExists(Scope scope)
 {
     if (scope.name.find('.') != std::string::npos)

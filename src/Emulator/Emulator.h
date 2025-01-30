@@ -23,7 +23,8 @@ public:
     void start();
     void stop();
     void terminate();
-    bool paused();
+    bool pausedAtBreakpoint();
+    void pause();
     bool clockRunning();
     void continue_exec();
 

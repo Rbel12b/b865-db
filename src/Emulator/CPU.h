@@ -129,6 +129,7 @@ public:
     MEMORY mem;
     bool stoppedAtBreakpoint = false;
     size_t breakpointNum = 0;
+    int savedPC = 0;
 
 private:
     void executeSignals();

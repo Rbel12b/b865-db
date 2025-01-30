@@ -69,9 +69,19 @@ void Emulator::terminate()
     m_cpu.stopPheripherials();
 }
 
-bool Emulator::paused()
+bool Emulator::pausedAtBreakpoint()
 {
+    if (m_cpu.stoppedAtBreakpoint)
+    {
+        pause();
+    }
     return m_cpu.stoppedAtBreakpoint;
+}
+void Emulator::pause()
+{
+    m_cpu.stoppedAtBreakpoint = true;
+    m_cpu.savedPC = -1;
+    stop();
 }
 
 bool Emulator::clockRunning()
@@ -82,6 +92,7 @@ bool Emulator::clockRunning()
 void Emulator::continue_exec()
 {
     m_cpu.stoppedAtBreakpoint = false;
+    m_cpu.savedPC = -1;
 }
 
 std::chrono::nanoseconds Emulator::getRunTime_ns()

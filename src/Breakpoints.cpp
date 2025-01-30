@@ -9,9 +9,9 @@ int Breakpoint::setPos(std::string &file, size_t& _line, DebuggerData *data)
 
     asmFile = ((path.extension() != ".c") && (path.extension() != ".h"));
 
-    if (asmFile)
+    if (asmFile && this->file.find_last_of('.') != std::string::npos)
     {
-        this->file = path.replace_extension().string();
+        this->file.erase(this->file.find_last_of('.'));
     }
 
     LinkerRecord* previousLineNode = nullptr;
@@ -39,27 +39,19 @@ int Breakpoint::setPos(std::string &file, size_t& _line, DebuggerData *data)
         }
     }
 
-    if (previousLineNode != nullptr)
-    {
-        addr = previousLineNode->addr;
-        level = previousLineNode->level;
-        block = previousLineNode->block;
-
-        if (nextLineNode != nullptr)
-        {
-            this->line = nextLineNode->line;
-        }
-        else
-        {
-            this->line = previousLineNode->line;
-        }
-    }
-    else if (nextLineNode != nullptr)
+    if (nextLineNode != nullptr)
     {
         addr = nextLineNode->addr;
         level = nextLineNode->level;
         block = nextLineNode->block;
         this->line = nextLineNode->line;
+    }
+    else if (previousLineNode != nullptr)
+    {
+        addr = previousLineNode->addr;
+        level = previousLineNode->level;
+        block = previousLineNode->block;
+        this->line = previousLineNode->line;
     }
     else
     {
@@ -86,6 +78,7 @@ void BreakpointList::addBreakpoint(std::string &file, size_t &line, DebuggerData
     id++;
     if (bp.setPos(file, line, data))
     {
+        id--;
         return;
     }
 

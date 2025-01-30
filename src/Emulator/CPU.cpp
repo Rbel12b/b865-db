@@ -115,18 +115,24 @@ void CPU::setBreakpoints(std::vector<uint16_t> &breakpoints)
     m_breakpoints = &breakpoints;
 }
 
+
 void CPU::cycle()
 {
-    auto it = std::find(m_breakpoints->begin(), m_breakpoints->end(), PC.addr);
-    if (it != m_breakpoints->end())
-    {
-        stoppedAtBreakpoint = true;
-        breakpointNum = std::distance(m_breakpoints->begin(), it);
-    }
-    if (stoppedAtBreakpoint)
+    if (stoppedAtBreakpoint && savedPC != PC.addr)
     {
         return;
     }
+    else if (savedPC != PC.addr)
+    {
+        auto it = std::find(m_breakpoints->begin(), m_breakpoints->end(), PC.addr);
+        if (it != m_breakpoints->end())
+        {
+            stoppedAtBreakpoint = true;
+            savedPC = PC.addr;
+            breakpointNum = std::distance(m_breakpoints->begin(), it);
+        }
+    }
+    
     if (signals.HLT)
     {
         return;

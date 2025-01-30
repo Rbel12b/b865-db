@@ -169,7 +169,8 @@ void CLI::handleEscape(const std::string &input, size_t &i, std::string &current
     // Handle other escape sequences as regular characters
     else
     {
-        currentArg += c;  // Add any other character as-is
+        currentArg += '\\';  // Add '\'
+        currentArg += c;  // And add the other character
     }
 }
 
