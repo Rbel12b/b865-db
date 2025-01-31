@@ -80,7 +80,6 @@ bool Emulator::pausedAtBreakpoint()
 void Emulator::pause()
 {
     m_cpu.stoppedAtBreakpoint = true;
-    m_cpu.savedPC = -1;
     stop();
 }
 
@@ -92,7 +91,7 @@ bool Emulator::clockRunning()
 void Emulator::continue_exec()
 {
     m_cpu.stoppedAtBreakpoint = false;
-    m_cpu.savedPC = -1;
+    m_cpu.breakpointNum = -1;
 }
 
 std::chrono::nanoseconds Emulator::getRunTime_ns()

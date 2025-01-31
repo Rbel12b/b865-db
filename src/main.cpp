@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
     emulator.setBreakpoints(breakpoints.addresses);
 
     cli.addCommand("quit", "", true, [](const std::vector<std::string> &args)
-                   { deallocExit(); cli.quit(args); }, "Quit the program");
+                   { cli.quit(args); }, "Quit the program");
     cli.addCommand("modules", "", true, [](const std::vector<std::string> &args)
                    { printModules(); }, "Print modules from the debug file");
     cli.addCommand("print", "<string>", true, [](const std::vector<std::string> &args)
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
                             printf("    at %s:%d\n", line.filename.c_str(), line.line);
                         } }, "Stop the emulator");
     cli.addCommand("continue", "", true, [](const std::vector<std::string> &args)
-                   { emulator.start(); emulator.continue_exec(); }, "continue the execution of the program");
+                   { emulator.continue_exec(); emulator.start(); }, "continue the execution of the program");
 
     // Convert command-line arguments to a vector of strings
     std::vector<std::string> args(argv + 1, argv + argc);

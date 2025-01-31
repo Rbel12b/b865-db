@@ -122,13 +122,14 @@ void CPU::cycle()
     {
         return;
     }
-    else if (savedPC != PC.addr)
+
+    if (savedPC != PC.addr)
     {
         auto it = std::find(m_breakpoints->begin(), m_breakpoints->end(), PC.addr);
         if (it != m_breakpoints->end())
         {
             stoppedAtBreakpoint = true;
-            savedPC = PC.addr;
+            savedPC = (unsigned int)PC.addr;
             breakpointNum = std::distance(m_breakpoints->begin(), it);
         }
     }
