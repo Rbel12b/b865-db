@@ -1,0 +1,3 @@
+[submodule "lib/CdbgExpr"]
+	path = lib/CdbgExpr
+	url = https://github.com/Rbel12b/CdbgExpr
