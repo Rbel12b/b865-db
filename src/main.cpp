@@ -27,7 +27,7 @@ void printModules()
     }
 }
 
-void handleHelpOption(const std::vector<std::string> &args)
+void handleArgs(const std::vector<std::string> &args)
 {
     if (std::find(args.begin(), args.end(), "-h") != args.end() ||
         std::find(args.begin(), args.end(), "--help") != args.end() ||
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
     bool inFile = false;
     std::string filename;
 
-    handleHelpOption(args);
+    handleArgs(args);
 
     for (const auto &arg : args)
     {

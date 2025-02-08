@@ -2,13 +2,16 @@ CXX = g++
 
 INCLUDEPATH =
 
-CFLAGS = -g -Wall -Wextra -fsanitize=address -fdiagnostics-color=always -std=c++17 $(INCLUDEPATH)
-LDFLAGS = -fsanitize=address
+CFLAGS = -g -Wall -Wextra -fdiagnostics-color=always -std=c++17 $(INCLUDEPATH)
+LDFLAGS =
 
 ifeq ($(OS),Windows_NT)
 	EXE_EXT = .exe
+	CFLAGS += -Wno-format
 else
 	EXE_EXT = 
+	CFLAGS += -fsanitize=address
+	LDFLAGS += -fsanitize=address
 endif
 
 SRC = $(wildcard src/*.cpp) $(wildcard src/**/*.cpp)
