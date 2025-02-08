@@ -13,7 +13,7 @@ void cycle_ins_level(void)
 }
 
 Emulator::Emulator()
-    : m_clock(cycle), m_cpu(cpu), m_mem(cpu.mem)
+    : m_cpu(cpu), m_clock(cycle), m_mem(cpu.mem)
 {
     m_clock.setHZ(1000000);
 }

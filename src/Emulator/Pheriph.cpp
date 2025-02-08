@@ -17,7 +17,7 @@ Pheriph::Pheriph(uint16_t len, std::string name)
 }
 
 Pheriph::Pheriph(uint16_t len, std::string name, std::vector<std::string> regNames)
-    : m_regNames(regNames), m_name(name)
+    : m_name(name), m_regNames(regNames)
 {
     initRegs(len);
 }
@@ -27,7 +27,7 @@ Pheriph::~Pheriph()
     stop();
     if (regs)
     {
-        delete[] regs;
+        free(regs);
         regs = nullptr;
     }
     return;

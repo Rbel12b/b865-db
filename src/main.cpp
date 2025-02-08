@@ -57,9 +57,9 @@ int main(int argc, char *argv[])
     emulator.setBreakpoints(breakpoints.addresses);
 
     cli.addCommand("quit", "", true, [](const std::vector<std::string> &args)
-                   { cli.quit(args); }, "Quit the program");
+                   { cli.quit(); (void)args;}, "Quit the program");
     cli.addCommand("modules", "", true, [](const std::vector<std::string> &args)
-                   { printModules(); }, "Print modules from the debug file");
+                   { printModules(); (void)args; }, "Print modules from the debug file");
     cli.addCommand("print", "<string>", true, [](const std::vector<std::string> &args)
                    { if (args.size() > 1) { std::cout << args[1] << std::endl; } }, "Print the string");
     cli.addCommand("break", "<position>", true, [](const std::vector<std::string> &args)
@@ -84,10 +84,10 @@ int main(int argc, char *argv[])
                         if (data != nullptr)
                         {
                             auto line = data->getLine(emulator.m_cpu.getStatus().PC.addr);
-                            printf("    at %s:%d\n", line.filename.c_str(), line.line);
-                        } }, "Stop the emulator");
+                            printf("    at %s:%ld\n", line.filename.c_str(), line.line);
+                        } (void)args;}, "Stop the emulator");
     cli.addCommand("continue", "", true, [](const std::vector<std::string> &args)
-                   { emulator.continue_exec(); emulator.start(); }, "continue the execution of the program");
+                   { emulator.continue_exec(); emulator.start(); (void)args; }, "continue the execution of the program");
 
     // Convert command-line arguments to a vector of strings
     std::vector<std::string> args(argv + 1, argv + argc);
@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
             if (emulator.pausedAtBreakpoint())
             {
                 size_t id = breakpoints.breakpoints[emulator.m_cpu.breakpointNum].id;
-                printf("Program hit breakpoint %d at address 0x%04x\n", id, emulator.m_cpu.getStatus().PC.addr);
+                printf("Program hit breakpoint %ld at address 0x%04x\n", id, emulator.m_cpu.getStatus().PC.addr);
                 emulator.stop();
             }
             std::this_thread::sleep_for(std::chrono::microseconds(100));

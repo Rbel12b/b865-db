@@ -17,7 +17,7 @@ public:
                          const std::function<void(const std::vector<std::string> &)> &handler,
                          const std::string &usage);
     void printUsage();
-    void quit(const std::vector<std::string> &args);
+    void quit();
 
 private:
     struct CommandInfo

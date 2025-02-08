@@ -299,7 +299,7 @@ uint8_t CPU::calcALUOut()
     uint16_t val = 0;
     if (signals.ROR)
     {
-        uint8_t val = (A >> 1) + (carry << 7);
+        val = (A >> 1) + (carry << 7);
         carry = A & 1;
     }
     else

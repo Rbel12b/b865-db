@@ -90,24 +90,24 @@ void BreakpointList::addBreakpoint(std::string &file, size_t &line, DebuggerData
         printf("Note: breakpoint");
         if (matches.size() == 1)
         {
-            printf(" %d", matches[0].id);
+            printf(" %ld", matches[0].id);
         }
         else if (matches.size() == 2)
         {
-            printf("s %d and %d", matches[0].id, matches[1].id);
+            printf("s %ld and %ld", matches[0].id, matches[1].id);
         }
         else
         {
             printf("s ");
-            for (int i = 0; i < matches.size() - 2; i++)
+            for (size_t i = 0; i < matches.size() - 2; i++)
             {
-                printf("%d, ", matches[i].id);
+                printf("%ld, ", matches[i].id);
             }
-            printf("%d and %d", matches[matches.size() - 2].id, matches[matches.size() - 1].id);
+            printf("%ld and %ld", matches[matches.size() - 2].id, matches[matches.size() - 1].id);
         }
         printf(" also set at pc 0x%02x.\n", bp.addr);
     }
-    printf("Breakpoint %d at 0x%04x: file %s, line %d.\n", bp.id, bp.addr, file.c_str(), line);
+    printf("Breakpoint %ld at 0x%04x: file %s, line %ld.\n", bp.id, bp.addr, file.c_str(), line);
     breakpoints.push_back(bp);
     updateAddresses();
 }
@@ -169,7 +169,7 @@ void BreakpointList::delBreakpoint(size_t id)
     }
     else
     {
-        printf("Error: Breakpoint id %d not found\n", id);
+        printf("Error: Breakpoint id %ld not found\n", id);
     }
 }
 
@@ -182,7 +182,7 @@ void BreakpointList::delBreakpoint(const std::vector<std::string> &args)
     }
     else
     {
-        for (int i = 1; i < args.size(); i++)
+        for (size_t i = 1; i < args.size(); i++)
         {
             if (std::isdigit(args[i][0]))
             {

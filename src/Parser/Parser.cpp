@@ -68,6 +68,7 @@ void Parser::parseModule(std::vector<Token>& tokens, size_t& i, DebuggerData &da
         return;
     }
     data.addModule(tokens[0].value);
+    (void)i;
 }
 
 FunctionRecord Parser::parseFunction(std::vector<Token>& tokens, size_t& i)
@@ -225,7 +226,6 @@ TypeChainRecord Parser::parseTypeChain(std::vector<Token>& tokens, size_t& i)
     {
         i++;
     }
-    size_t DCLTypeNum;
     while (1)
     {
         Token& token = tokens[i];
@@ -405,13 +405,13 @@ std::vector<Token> Parser::tokenize(const std::string &line)
 
         if (c == '(' || c == '['|| c == '{')
         {
-            tokens.push_back(Token{Token::Type::LeftBracket});
+            tokens.push_back(Token{Token::Type::LeftBracket, std::string(1, c)});
         }
         else if (c == ')' || c == ']' || c == '}' )
         {
-            tokens.push_back(Token{Token::Type::RightBracket});
+            tokens.push_back(Token{Token::Type::RightBracket, std::string(1, c)});
         }
-        else if (c == ':', c == ',', c == '$')
+        else if (c == ':' || c == ',' || c == '$')
         {
             continue;
         }
@@ -431,6 +431,6 @@ std::vector<Token> Parser::tokenize(const std::string &line)
             }
         }
     }
-    tokens.push_back(Token{Token::Type::LineEnd});
+    tokens.push_back(Token{Token::Type::LineEnd,"\n"});
     return tokens;
 }

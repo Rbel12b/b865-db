@@ -5,7 +5,7 @@
 CLI::CLI()
 {
     addCommand("help", "", false, [this](const std::vector<std::string> &args)
-               { printUsage(); }, "print avaliable command and usage");
+               { printUsage(); (void)args ;}, "print avaliable command and usage");
 }
 
 bool CLI::run()
@@ -222,7 +222,7 @@ void CLI::processFullCommand(const std::vector<std::string> &args)
     std::cerr << "Unknown command: " << command << "\n";
 }
 
-void CLI::quit(const std::vector<std::string> &args)
+void CLI::quit()
 {
     running = false;
 }

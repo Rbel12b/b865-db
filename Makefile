@@ -2,8 +2,8 @@ CXX = g++
 
 INCLUDEPATH =
 
-CFLAGS = -g -fdiagnostics-color=always -std=c++17 $(INCLUDEPATH)
-LDFLAGS =
+CFLAGS = -g -Wall -Wextra -fsanitize=address -fdiagnostics-color=always -std=c++17 $(INCLUDEPATH)
+LDFLAGS = -fsanitize=address
 
 ifeq ($(OS),Windows_NT)
 	EXE_EXT = .exe
