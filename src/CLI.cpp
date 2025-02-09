@@ -229,7 +229,7 @@ void CLI::quit()
 
 void CLI::printUsage()
 {
-    printf("Usage: b865-db <input_file>\n");
+    printf("%s", usage_str.c_str());
     std::cout << "Commands:\n";
     for (const auto &[name, info] : commands)
     {

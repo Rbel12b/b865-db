@@ -22,14 +22,28 @@ public:
     uint16_t getAddr();
 };
 
+class BreakpointData
+{
+public:
+    size_t id;
+    size_t addr;
+    std::string func;
+    std::string file;
+    std::string fullname;
+    size_t line;
+    std::string original_loc;
+};
+
 class BreakpointList
 {
 public:
+    static bool print;
+    static std::string execPath;
     std::vector<Breakpoint> breakpoints;
     std::vector<uint16_t> addresses;
     size_t id = 0;
-    void addBreakpoint(std::string& file, size_t& line, DebuggerData* data);
-    void addBreakpoint(const std::vector<std::string> &args, DebuggerData* data);
+    BreakpointData addBreakpoint(std::string& file, size_t& line, DebuggerData* data);
+    BreakpointData addBreakpoint(const std::vector<std::string> &args, DebuggerData* data);
     void delBreakpoint(size_t id);
     void delBreakpoint(const std::vector<std::string> &args);
     void updateAddresses();

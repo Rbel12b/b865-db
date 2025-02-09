@@ -3,4 +3,4 @@ b865-db*
 build
 .vscode
 .stamp
-lib/test
+test

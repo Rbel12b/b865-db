@@ -18,6 +18,7 @@ public:
                          const std::string &usage);
     void printUsage();
     void quit();
+    std::string usage_str;
 
 private:
     struct CommandInfo

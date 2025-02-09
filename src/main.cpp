@@ -4,6 +4,7 @@
 #include <string>
 #include <thread>
 #include <chrono>
+#include <filesystem>
 #include "Emulator/Emulator.h"
 #include "Parser/Parser.h"
 #include "CLI.h"
@@ -14,6 +15,22 @@ CLI cli;
 DebuggerData *data = nullptr;
 BreakpointList breakpoints;
 Emulator emulator;
+std::string binaryFile;
+std::string symbolFile;
+
+bool MImode = false;
+
+void deallocExit(int code = 0)
+{
+    if (data != nullptr)
+    {
+        delete data;
+        data = nullptr;
+    }
+    emulator.terminate();
+    emulator.stop();
+    exit(code);
+}
 
 void printModules()
 {
@@ -34,27 +51,39 @@ void handleArgs(const std::vector<std::string> &args)
         std::find(args.begin(), args.end(), "-help") != args.end())
     {
         cli.printUsage();
-        exit(0);
+        deallocExit(0);
     }
-}
-
-void deallocExit(int code = 0)
-{
-    if (data != nullptr)
+    if (std::find(args.begin(), args.end(), "--interpreter=mi") != args.end())
     {
-        delete data;
-        data = nullptr;
+        MImode = true;
     }
-    emulator.terminate();
-    emulator.stop();
-    exit(code);
+    if (std::find(args.begin(), args.end(), "--args") != args.end())
+    {
+        size_t argsIndex = std::find(args.begin(), args.end(), "--args") - args.begin();
+        if (argsIndex + 1 < args.size())
+        {
+            binaryFile = args[argsIndex + 1];
+        }
+        if (argsIndex + 2 < args.size())
+        {
+            symbolFile = args[argsIndex + 2];
+        }
+    }
 }
 
 int main(int argc, char *argv[])
 {
+    cli.usage_str = 
+    "Usage: b865-db <options> --args <binary file> <symbol file>\n"
+    "options:\n"
+    "    --interpreter=mi   - set MI mode\n"
+    "    -h -help --help    - display help and quit\n";
     emulator.init();
     emulator.pause();
     emulator.setBreakpoints(breakpoints.addresses);
+
+    // Convert command-line arguments to a vector of strings
+    std::vector<std::string> args(argv + 1, argv + argc);
 
     cli.addCommand("quit", "", true, [](const std::vector<std::string> &args)
                    { cli.quit(); (void)args;}, "Quit the program");
@@ -75,6 +104,7 @@ int main(int argc, char *argv[])
                                 return;
                             }
                         }
+                        BreakpointList::execPath = std::filesystem::path(args[1]).parent_path().string();
                         emulator.start();
                         emulator.continue_exec(); }, "Start the emulator with the specified file");
     cli.addCommand("stop", "", false, [](const std::vector<std::string> &args)
@@ -88,52 +118,22 @@ int main(int argc, char *argv[])
                         } (void)args;}, "Stop the emulator");
     cli.addCommand("continue", "", true, [](const std::vector<std::string> &args)
                    { emulator.continue_exec(); emulator.start(); (void)args; }, "continue the execution of the program");
-
-    // Convert command-line arguments to a vector of strings
-    std::vector<std::string> args(argv + 1, argv + argc);
-
-    bool help = false;
-    bool inFile = false;
-    std::string filename;
-
     handleArgs(args);
 
-    for (const auto &arg : args)
-    {
-        if (arg[0] != '-')
-        {
-            inFile = true;
-            filename = arg;
-            break;
-        }
-    }
+    BreakpointList::print = true;
+    BreakpointList::execPath = std::filesystem::path(binaryFile).parent_path().string();
 
-    if (inFile)
+
+    data = parser.parse(symbolFile);
+    if (data == nullptr)
     {
-        data = parser.parse(filename);
-        if (data == nullptr)
-        {
-            std::cerr << "Error parsing file: " << filename << std::endl;
-            deallocExit(1);
-            return 1;
-        }
-    }
-    else
-    {
-        std::cout << "No input file specified.\n";
-        cli.printUsage();
-        deallocExit(help == true ? 0 : 1);
+        std::cerr << "Error parsing file: " << symbolFile << std::endl;
+        std::cerr << "Second argument must be a valid debug file." << std::endl;
+        deallocExit(1);
         return 1;
     }
 
     std::cout << "b865-debugger (type 'quit' or 'q' to exit, 'help' for usage)\n";
-
-    if (help)
-    {
-        cli.printUsage();
-        deallocExit();
-        return 0;
-    }
 
     while (1)
     {
